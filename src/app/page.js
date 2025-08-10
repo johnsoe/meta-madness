@@ -1,6 +1,4 @@
 "use client";
-import Image from "next/image";
-
 import React, { useState, useEffect } from 'react';
 import { RotateCcw, Trophy, Users } from 'lucide-react';
 
@@ -30,6 +28,7 @@ const HotsDraftTool = () => {
   const [teamScores, setTeamScores] = useState({ blue: 0, red: 0 });
   const [bannedHeroes, setBannedHeroes] = useState(new Set());
   const [currentDraft, setCurrentDraft] = useState([]);
+  const [gameHistory, setGameHistory] = useState([]); // Store completed games
   const [currentTeam, setCurrentTeam] = useState('blue');
   const [currentPick, setCurrentPick] = useState(1);
   const [picksInCurrentTurn, setPicksInCurrentTurn] = useState(0);
@@ -50,6 +49,7 @@ const HotsDraftTool = () => {
     setTeamScores({ blue: 0, red: 0 });
     setBannedHeroes(new Set());
     setCurrentDraft([]);
+    setGameHistory([]);
     setCurrentTeam(firstPickTeam);
     setCurrentPick(1);
     setPicksInCurrentTurn(0);
@@ -82,6 +82,16 @@ const HotsDraftTool = () => {
   };
 
   const completeGame = (winner) => {
+    // Save the completed game to history
+    const completedGame = {
+      gameNumber: currentGame,
+      winner: winner,
+      draft: currentDraft,
+      bluePicks: getTeamDraft('blue'),
+      redPicks: getTeamDraft('red')
+    };
+    setGameHistory(prev => [...prev, completedGame]);
+
     const newScores = { ...teamScores };
     newScores[winner]++;
     setTeamScores(newScores);
@@ -229,6 +239,31 @@ const HotsDraftTool = () => {
         {gamePhase === 'game-complete' && (
           <div className="mb-6 p-4 bg-slate-800 rounded-lg text-center">
             <h3 className="text-lg font-semibold mb-4">Game {currentGame} Complete - Who Won?</h3>
+            
+            {/* Show current game draft */}
+            <div className="grid grid-cols-2 gap-4 mb-6 text-left">
+              <div className="bg-blue-900/20 p-3 rounded">
+                <h4 className="text-blue-400 font-semibold mb-2">Blue Team</h4>
+                <div className="space-y-1">
+                  {getTeamDraft('blue').map((pick, idx) => (
+                    <div key={idx} className="text-sm bg-blue-900/30 px-2 py-1 rounded">
+                      {pick.hero}
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div className="bg-red-900/20 p-3 rounded">
+                <h4 className="text-red-400 font-semibold mb-2">Red Team</h4>
+                <div className="space-y-1">
+                  {getTeamDraft('red').map((pick, idx) => (
+                    <div key={idx} className="text-sm bg-red-900/30 px-2 py-1 rounded">
+                      {pick.hero}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
             <div className="flex justify-center gap-4">
               <button 
                 onClick={() => completeGame('blue')}
@@ -242,6 +277,49 @@ const HotsDraftTool = () => {
               >
                 Red Team Won
               </button>
+            </div>
+          </div>
+        )}
+
+        {/* Game History */}
+        {gameHistory.length > 0 && (
+          <div className="mb-6 p-4 bg-slate-800 rounded-lg">
+            <h3 className="text-lg font-semibold mb-4">Game History</h3>
+            <div className="space-y-4">
+              {gameHistory.map((game, idx) => (
+                <div key={idx} className="bg-slate-700 p-4 rounded-lg">
+                  <div className="flex items-center justify-between mb-3">
+                    <h4 className="font-semibold">Game {game.gameNumber}</h4>
+                    <div className={`px-3 py-1 rounded text-sm font-semibold ${
+                      game.winner === 'blue' ? 'bg-blue-600 text-white' : 'bg-red-600 text-white'
+                    }`}>
+                      {game.winner === 'blue' ? 'Blue' : 'Red'} Team Won
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <h5 className="text-blue-400 font-semibold mb-2 text-sm">Blue Team Picks</h5>
+                      <div className="flex flex-wrap gap-1">
+                        {game.bluePicks.map((pick, pickIdx) => (
+                          <span key={pickIdx} className="text-xs bg-blue-900/40 px-2 py-1 rounded">
+                            {pick.hero}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                    <div>
+                      <h5 className="text-red-400 font-semibold mb-2 text-sm">Red Team Picks</h5>
+                      <div className="flex flex-wrap gap-1">
+                        {game.redPicks.map((pick, pickIdx) => (
+                          <span key={pickIdx} className="text-xs bg-red-900/40 px-2 py-1 rounded">
+                            {pick.hero}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
         )}
