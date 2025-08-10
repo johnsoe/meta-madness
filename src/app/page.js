@@ -33,8 +33,12 @@ const HotsDraftTool = () => {
   const [currentPick, setCurrentPick] = useState(1);
   const [picksInCurrentTurn, setPicksInCurrentTurn] = useState(0);
   const [gamePhase, setGamePhase] = useState('drafting'); // 'drafting', 'game-complete', 'series-complete'
+  const [searchTerm, setSearchTerm] = useState(''); // Hero search filter
 
   const availableHeroes = allHeroes.filter(hero => !bannedHeroes.has(hero));
+  const filteredHeroes = allHeroes.filter(hero => 
+    hero.toLowerCase().includes(searchTerm.toLowerCase())
+  );
   const maxGames = Math.ceil(seriesFormat / 2);
 
   // Snake draft order: Blue(1) -> Red(2) -> Blue(2) -> Red(2) -> Blue(2) -> Red(1)
@@ -324,19 +328,37 @@ const HotsDraftTool = () => {
           </div>
         )}
 
-        {/* Hero Pool Status */}
-        <div className="mb-4 flex items-center justify-between">
+        {/* Hero Pool Status and Search */}
+        <div className="mb-4 flex items-center justify-between flex-wrap gap-4">
           <div className="flex items-center gap-4">
             <span className="text-lg font-semibold">Hero Pool</span>
             <span className="text-slate-400">
               Available: {availableHeroes.length} | Banned: {bannedHeroes.size}
             </span>
           </div>
+          <div className="flex items-center gap-2">
+            <span className="text-slate-300">Search:</span>
+            <input
+              type="text"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              placeholder="Filter heroes..."
+              className="bg-slate-700 text-white px-3 py-1 rounded border border-slate-600 focus:border-slate-500 focus:outline-none w-48"
+            />
+            {searchTerm && (
+              <button
+                onClick={() => setSearchTerm('')}
+                className="text-slate-400 hover:text-white text-sm px-2 py-1 hover:bg-slate-600 rounded transition-colors"
+              >
+                Clear
+              </button>
+            )}
+          </div>
         </div>
 
         {/* Hero Grid */}
         <div className="grid grid-cols-4 md:grid-cols-6 lg:grid-cols-8 xl:grid-cols-10 gap-2">
-          {allHeroes.map((hero) => {
+          {filteredHeroes.map((hero) => {
             const isBanned = bannedHeroes.has(hero);
             return (
               <button
@@ -358,6 +380,13 @@ const HotsDraftTool = () => {
             );
           })}
         </div>
+
+        {/* No results message */}
+        {filteredHeroes.length === 0 && searchTerm && (
+          <div className="text-center py-8 text-slate-400">
+            No heroes found matching "{searchTerm}"
+          </div>
+        )}
 
         {/* Legend */}
         <div className="mt-6 p-4 bg-slate-800 rounded-lg">
