@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect } from 'react';
-import { RotateCcw, Trophy, Users } from 'lucide-react';
+import { RotateCcw, Trophy, Users, Edit2, Check, X } from 'lucide-react';
 
 const HotsDraftTool = () => {
   // Sample hero data - in a real app, this would be comprehensive
@@ -24,6 +24,9 @@ const HotsDraftTool = () => {
 
   const [seriesFormat, setSeriesFormat] = useState(3); // 3 or 5
   const [firstPickTeam, setFirstPickTeam] = useState('blue'); // Which team picks first
+  const [teamNames, setTeamNames] = useState({ blue: 'Blue Team', red: 'Red Team' });
+  const [editingTeam, setEditingTeam] = useState(null); // 'blue', 'red', or null
+  const [editingName, setEditingName] = useState('');
   const [currentGame, setCurrentGame] = useState(1);
   const [teamScores, setTeamScores] = useState({ blue: 0, red: 0 });
   const [draftedHeroes, setDraftedHeroes] = useState(new Set());
@@ -46,6 +49,27 @@ const HotsDraftTool = () => {
     if (currentPick === 1) return 1; // Blue's first pick
     if (currentPick === 10) return 1; // Red's last pick
     return 2; // All other picks are 2 at a time
+  };
+
+  const startEditingTeam = (team) => {
+    setEditingTeam(team);
+    setEditingName(teamNames[team]);
+  };
+
+  const cancelEditingTeam = () => {
+    setEditingTeam(null);
+    setEditingName('');
+  };
+
+  const saveTeamName = () => {
+    if (editingName.trim()) {
+      setTeamNames(prev => ({
+        ...prev,
+        [editingTeam]: editingName.trim()
+      }));
+    }
+    setEditingTeam(null);
+    setEditingName('');
   };
 
   const resetSeries = () => {
@@ -150,8 +174,8 @@ const HotsDraftTool = () => {
               className="bg-slate-700 text-white px-3 py-1 rounded"
               disabled={gamePhase !== 'drafting' || currentPick > 1}
             >
-              <option value="blue">Blue Team</option>
-              <option value="red">Red Team</option>
+              <option value="blue">{teamNames.blue}</option>
+              <option value="red">{teamNames.red}</option>
             </select>
           </div>
           <button 
@@ -167,7 +191,39 @@ const HotsDraftTool = () => {
         <div className="grid grid-cols-3 gap-4 mb-6">
           {/* Blue Team Score */}
           <div className="bg-blue-900/50 p-4 rounded-lg text-center">
-            <div className="text-blue-400 font-semibold mb-2">Blue Team</div>
+            <div className="text-blue-400 font-semibold mb-2 flex items-center justify-center gap-2">
+              {editingTeam === 'blue' ? (
+                <div className="flex items-center gap-2">
+                  <input
+                    type="text"
+                    value={editingName}
+                    onChange={(e) => setEditingName(e.target.value)}
+                    className="bg-blue-800/50 text-blue-200 px-2 py-1 rounded text-sm w-24 text-center"
+                    autoFocus
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') saveTeamName();
+                      if (e.key === 'Escape') cancelEditingTeam();
+                    }}
+                  />
+                  <button onClick={saveTeamName} className="text-green-400 hover:text-green-300">
+                    <Check size={14} />
+                  </button>
+                  <button onClick={cancelEditingTeam} className="text-red-400 hover:text-red-300">
+                    <X size={14} />
+                  </button>
+                </div>
+              ) : (
+                <div className="flex items-center gap-2">
+                  <span>{teamNames.blue}</span>
+                  <button 
+                    onClick={() => startEditingTeam('blue')}
+                    className="text-blue-300 hover:text-blue-200 opacity-70 hover:opacity-100"
+                  >
+                    <Edit2 size={14} />
+                  </button>
+                </div>
+              )}
+            </div>
             <div className="text-3xl font-bold">{teamScores.blue}</div>
           </div>
 
@@ -180,7 +236,7 @@ const HotsDraftTool = () => {
                   Series Complete!
                 </div>
                 <div className="text-xl">
-                  {teamScores.blue > teamScores.red ? 'Blue Team' : 'Red Team'} Wins!
+                  {teamScores.blue > teamScores.red ? teamNames.blue : teamNames.red} Wins!
                 </div>
               </div>
             ) : (
@@ -189,7 +245,7 @@ const HotsDraftTool = () => {
                 {gamePhase === 'drafting' ? (
                   <div className="text-sm">
                     <div className={`font-semibold ${currentTeam === 'blue' ? 'text-blue-400' : 'text-red-400'}`}>
-                      {currentTeam === 'blue' ? 'Blue' : 'Red'} Team
+                      {teamNames[currentTeam]}
                     </div>
                     <div className="text-xs text-slate-400">
                       Pick {picksInCurrentTurn + 1} of {getPicksForCurrentTurn()} 
@@ -205,7 +261,39 @@ const HotsDraftTool = () => {
 
           {/* Red Team Score */}
           <div className="bg-red-900/50 p-4 rounded-lg text-center">
-            <div className="text-red-400 font-semibold mb-2">Red Team</div>
+            <div className="text-red-400 font-semibold mb-2 flex items-center justify-center gap-2">
+              {editingTeam === 'red' ? (
+                <div className="flex items-center gap-2">
+                  <input
+                    type="text"
+                    value={editingName}
+                    onChange={(e) => setEditingName(e.target.value)}
+                    className="bg-red-800/50 text-red-200 px-2 py-1 rounded text-sm w-24 text-center"
+                    autoFocus
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') saveTeamName();
+                      if (e.key === 'Escape') cancelEditingTeam();
+                    }}
+                  />
+                  <button onClick={saveTeamName} className="text-green-400 hover:text-green-300">
+                    <Check size={14} />
+                  </button>
+                  <button onClick={cancelEditingTeam} className="text-red-400 hover:text-red-300">
+                    <X size={14} />
+                  </button>
+                </div>
+              ) : (
+                <div className="flex items-center gap-2">
+                  <span>{teamNames.red}</span>
+                  <button 
+                    onClick={() => startEditingTeam('red')}
+                    className="text-red-300 hover:text-red-200 opacity-70 hover:opacity-100"
+                  >
+                    <Edit2 size={14} />
+                  </button>
+                </div>
+              )}
+            </div>
             <div className="text-3xl font-bold">{teamScores.red}</div>
           </div>
         </div>
@@ -216,7 +304,7 @@ const HotsDraftTool = () => {
             <h3 className="text-lg font-semibold mb-3">Current Game Draft</h3>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <h4 className="text-blue-400 font-semibold mb-2">Blue Team</h4>
+                <h4 className="text-blue-400 font-semibold mb-2">{teamNames.blue}</h4>
                 <div className="space-y-1">
                   {getTeamDraft('blue').map((pick, idx) => (
                     <div key={idx} className="text-sm bg-blue-900/30 px-2 py-1 rounded">
@@ -226,7 +314,7 @@ const HotsDraftTool = () => {
                 </div>
               </div>
               <div>
-                <h4 className="text-red-400 font-semibold mb-2">Red Team</h4>
+                <h4 className="text-red-400 font-semibold mb-2">{teamNames.red}</h4>
                 <div className="space-y-1">
                   {getTeamDraft('red').map((pick, idx) => (
                     <div key={idx} className="text-sm bg-red-900/30 px-2 py-1 rounded">
@@ -247,7 +335,7 @@ const HotsDraftTool = () => {
             {/* Show current game draft */}
             <div className="grid grid-cols-2 gap-4 mb-6 text-left">
               <div className="bg-blue-900/20 p-3 rounded">
-                <h4 className="text-blue-400 font-semibold mb-2">Blue Team</h4>
+                <h4 className="text-blue-400 font-semibold mb-2">{teamNames.blue}</h4>
                 <div className="space-y-1">
                   {getTeamDraft('blue').map((pick, idx) => (
                     <div key={idx} className="text-sm bg-blue-900/30 px-2 py-1 rounded">
@@ -257,7 +345,7 @@ const HotsDraftTool = () => {
                 </div>
               </div>
               <div className="bg-red-900/20 p-3 rounded">
-                <h4 className="text-red-400 font-semibold mb-2">Red Team</h4>
+                <h4 className="text-red-400 font-semibold mb-2">{teamNames.red}</h4>
                 <div className="space-y-1">
                   {getTeamDraft('red').map((pick, idx) => (
                     <div key={idx} className="text-sm bg-red-900/30 px-2 py-1 rounded">
@@ -273,13 +361,13 @@ const HotsDraftTool = () => {
                 onClick={() => completeGame('blue')}
                 className="px-6 py-3 bg-blue-600 hover:bg-blue-700 rounded font-semibold transition-colors"
               >
-                Blue Team Won
+                {teamNames.blue} Won
               </button>
               <button 
                 onClick={() => completeGame('red')}
                 className="px-6 py-3 bg-red-600 hover:bg-red-700 rounded font-semibold transition-colors"
               >
-                Red Team Won
+                {teamNames.red} Won
               </button>
             </div>
           </div>
