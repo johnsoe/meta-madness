@@ -26,7 +26,7 @@ const HotsDraftTool = () => {
   const [firstPickTeam, setFirstPickTeam] = useState('blue'); // Which team picks first
   const [currentGame, setCurrentGame] = useState(1);
   const [teamScores, setTeamScores] = useState({ blue: 0, red: 0 });
-  const [bannedHeroes, setBannedHeroes] = useState(new Set());
+  const [draftedHeroes, setDraftedHeroes] = useState(new Set());
   const [currentDraft, setCurrentDraft] = useState([]);
   const [gameHistory, setGameHistory] = useState([]); // Store completed games
   const [currentTeam, setCurrentTeam] = useState('blue');
@@ -35,7 +35,7 @@ const HotsDraftTool = () => {
   const [gamePhase, setGamePhase] = useState('drafting'); // 'drafting', 'game-complete', 'series-complete'
   const [searchTerm, setSearchTerm] = useState(''); // Hero search filter
 
-  const availableHeroes = allHeroes.filter(hero => !bannedHeroes.has(hero));
+  const availableHeroes = allHeroes.filter(hero => !draftedHeroes.has(hero));
   const filteredHeroes = allHeroes.filter(hero => 
     hero.toLowerCase().includes(searchTerm.toLowerCase())
   );
@@ -51,7 +51,7 @@ const HotsDraftTool = () => {
   const resetSeries = () => {
     setCurrentGame(1);
     setTeamScores({ blue: 0, red: 0 });
-    setBannedHeroes(new Set());
+    setDraftedHeroes(new Set());
     setCurrentDraft([]);
     setGameHistory([]);
     setCurrentTeam(firstPickTeam);
@@ -61,11 +61,11 @@ const HotsDraftTool = () => {
   };
 
   const selectHero = (hero) => {
-    if (bannedHeroes.has(hero) || gamePhase !== 'drafting') return;
+    if (draftedHeroes.has(hero) || gamePhase !== 'drafting') return;
 
     const newDraft = [...currentDraft, { hero, team: currentTeam, pick: currentPick }];
     setCurrentDraft(newDraft);
-    setBannedHeroes(prev => new Set([...prev, hero]));
+    setDraftedHeroes(prev => new Set([...prev, hero]));
 
     const newPicksInTurn = picksInCurrentTurn + 1;
     const requiredPicksThisTurn = getPicksForCurrentTurn();
@@ -333,7 +333,7 @@ const HotsDraftTool = () => {
           <div className="flex items-center gap-4">
             <span className="text-lg font-semibold">Hero Pool</span>
             <span className="text-slate-400">
-              Available: {availableHeroes.length} | Banned: {bannedHeroes.size}
+              Available: {availableHeroes.length} | Drafted: {draftedHeroes.size}
             </span>
           </div>
           <div className="flex items-center gap-2">
@@ -359,15 +359,15 @@ const HotsDraftTool = () => {
         {/* Hero Grid */}
         <div className="grid grid-cols-4 md:grid-cols-6 lg:grid-cols-8 xl:grid-cols-10 gap-2">
           {filteredHeroes.map((hero) => {
-            const isBanned = bannedHeroes.has(hero);
+            const isDrafted = draftedHeroes.has(hero);
             return (
               <button
                 key={hero}
                 onClick={() => selectHero(hero)}
-                disabled={isBanned || gamePhase !== 'drafting'}
+                disabled={isDrafted || gamePhase !== 'drafting'}
                 className={`
                   p-3 rounded-lg text-sm font-medium transition-all duration-200 min-h-[60px] flex items-center justify-center text-center
-                  ${isBanned 
+                  ${isDrafted 
                     ? 'bg-slate-700 text-slate-500 cursor-not-allowed opacity-50' 
                     : gamePhase === 'drafting'
                     ? 'bg-slate-600 hover:bg-slate-500 text-white cursor-pointer transform hover:scale-105'
@@ -398,7 +398,7 @@ const HotsDraftTool = () => {
             </div>
             <div className="flex items-center gap-2">
               <div className="w-4 h-4 bg-slate-700 opacity-50 rounded"></div>
-              <span>Banned Hero</span>
+              <span>Drafted Hero</span>
             </div>
           </div>
         </div>
