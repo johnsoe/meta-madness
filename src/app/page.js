@@ -144,7 +144,7 @@ const HotsDraftTool = () => {
                 setCurrentTeam(e.target.value);
               }}
               className="bg-slate-700 text-white px-3 py-1 rounded"
-              disabled={currentGame > 1 || gamePhase !== 'drafting' || currentPick > 1}
+              disabled={gamePhase !== 'drafting' || currentPick > 1}
             >
               <option value="blue">Blue Team</option>
               <option value="red">Red Team</option>
@@ -207,7 +207,7 @@ const HotsDraftTool = () => {
         </div>
 
         {/* Current Draft Display */}
-        {currentDraft.length > 0 && (
+        {currentDraft.length > 0 && gamePhase === 'drafting' && (
           <div className="mb-6 p-4 bg-slate-800 rounded-lg">
             <h3 className="text-lg font-semibold mb-3">Current Game Draft</h3>
             <div className="grid grid-cols-2 gap-4">
