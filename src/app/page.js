@@ -24,6 +24,9 @@ const HotsDraftTool = () => {
 
   const [seriesFormat, setSeriesFormat] = useState(3); // 3 or 5
   const [firstPickTeam, setFirstPickTeam] = useState('blue'); // Which team picks first
+  const [preBanEnabled, setPreBanEnabled] = useState(false); // Whether pre-banning is enabled
+  const [preBannedHeroes, setPreBannedHeroes] = useState(new Set());
+  const [preBanPhase, setPreBanPhase] = useState(false); // Are we in pre-ban phase?
   const [teamNames, setTeamNames] = useState({ blue: 'Blue Team', red: 'Red Team' });
   const [editingTeam, setEditingTeam] = useState(null); // 'blue', 'red', or null
   const [editingName, setEditingName] = useState('');
@@ -38,7 +41,7 @@ const HotsDraftTool = () => {
   const [gamePhase, setGamePhase] = useState('drafting'); // 'drafting', 'game-complete', 'series-complete'
   const [searchTerm, setSearchTerm] = useState(''); // Hero search filter
 
-  const availableHeroes = allHeroes.filter(hero => !draftedHeroes.has(hero));
+  const availableHeroes = allHeroes.filter(hero => !draftedHeroes.has(hero) && !preBannedHeroes.has(hero));
   const filteredHeroes = allHeroes.filter(hero => 
     hero.toLowerCase().includes(searchTerm.toLowerCase())
   );
@@ -76,16 +79,61 @@ const HotsDraftTool = () => {
     setCurrentGame(1);
     setTeamScores({ blue: 0, red: 0 });
     setDraftedHeroes(new Set());
+    setPreBannedHeroes(new Set());
+    setPreBanPhase(preBanEnabled);
     setCurrentDraft([]);
     setGameHistory([]);
     setCurrentTeam(firstPickTeam);
     setCurrentPick(1);
     setPicksInCurrentTurn(0);
+    setGamePhase(preBanEnabled ? 'pre-ban' : 'drafting');
+  };
+
+  const startDraftPhase = () => {
+    setPreBanPhase(false);
     setGamePhase('drafting');
   };
 
+  const togglePreBan = () => {
+    const newPreBanEnabled = !preBanEnabled;
+    setPreBanEnabled(newPreBanEnabled);
+    
+    if (newPreBanEnabled) {
+      // Enable pre-banning
+      setPreBanPhase(true);
+      setGamePhase('pre-ban');
+      setCurrentDraft([]); // Clear any existing draft
+    } else {
+      // Disable pre-banning
+      setPreBanPhase(false);
+      setPreBannedHeroes(new Set()); // Clear all pre-bans
+      setCurrentDraft([]); // Clear current draft
+      setGamePhase('drafting'); // Go back to drafting
+    }
+  };
+
+  const selectPreBan = (hero) => {
+    if (preBannedHeroes.has(hero) || draftedHeroes.has(hero)) return;
+    
+    const newPreBanned = new Set([...preBannedHeroes, hero]);
+    setPreBannedHeroes(newPreBanned);
+    
+    // No automatic transition - users can ban as many heroes as they want
+  };
+
+  const removePreBan = (hero) => {
+    const newPreBanned = new Set([...preBannedHeroes]);
+    newPreBanned.delete(hero);
+    setPreBannedHeroes(newPreBanned);
+  };
+
   const selectHero = (hero) => {
-    if (draftedHeroes.has(hero) || gamePhase !== 'drafting') return;
+    if (gamePhase === 'pre-ban') {
+      selectPreBan(hero);
+      return;
+    }
+    
+    if (draftedHeroes.has(hero) || preBannedHeroes.has(hero) || gamePhase !== 'drafting') return;
 
     const newDraft = [...currentDraft, { hero, team: currentTeam, pick: currentPick }];
     setCurrentDraft(newDraft);
@@ -150,18 +198,34 @@ const HotsDraftTool = () => {
         </div>
 
         {/* Series Controls */}
-        <div className="flex justify-center items-center gap-6 mb-6 p-4 bg-slate-800 rounded-lg">
+        <div className="flex justify-center items-center gap-6 mb-6 p-4 bg-slate-800 rounded-lg flex-wrap">
           <div className="flex items-center gap-2">
             <span className="text-slate-300">Series Format:</span>
             <select 
               value={seriesFormat} 
               onChange={(e) => setSeriesFormat(Number(e.target.value))}
               className="bg-slate-700 text-white px-3 py-1 rounded"
-              disabled={currentGame > 1}
+              disabled={currentGame > 1 || gamePhase !== 'drafting'}
             >
               <option value={3}>Best of 3</option>
               <option value={5}>Best of 5</option>
             </select>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="text-slate-300">Pre-bans:</span>
+            <button
+              onClick={togglePreBan}
+              className={`
+                flex items-center gap-2 px-4 py-2 rounded transition-colors
+                ${preBanEnabled
+                  ? 'bg-green-600 hover:bg-green-700 text-white'
+                  : 'bg-red-600 hover:bg-red-700 text-white'
+                }
+              `}
+              disabled={currentGame > 1 || gamePhase !== 'drafting'}
+            >
+              {preBanEnabled ? 'Disable Pre-bans' : 'Enable Pre-bans'}
+            </button>
           </div>
           <div className="flex items-center gap-2">
             <span className="text-slate-300">First Pick:</span>
@@ -239,6 +303,19 @@ const HotsDraftTool = () => {
                   {teamScores.blue > teamScores.red ? teamNames.blue : teamNames.red} Wins!
                 </div>
               </div>
+            ) : gamePhase === 'pre-ban' ? (
+              <div>
+                <div className="text-orange-400 font-semibold mb-2">Pre-Ban Phase</div>
+                <div className="text-sm text-slate-300 mb-3">
+                  Select heroes to pre-ban (no limit)
+                </div>
+                <button
+                  onClick={startDraftPhase}
+                  className="px-4 py-2 bg-green-600 hover:bg-green-700 rounded font-semibold transition-colors"
+                >
+                  Start Draft
+                </button>
+              </div>
             ) : (
               <div>
                 <div className="text-slate-300 font-semibold mb-2">Game {currentGame}</div>
@@ -297,6 +374,23 @@ const HotsDraftTool = () => {
             <div className="text-3xl font-bold">{teamScores.red}</div>
           </div>
         </div>
+
+        {/* Pre-banned Heroes Display */}
+        {preBannedHeroes.size > 0 && (
+          <div className="mb-6 p-4 bg-slate-800 rounded-lg">
+            <h3 className="text-lg font-semibold mb-3 text-orange-400">Pre-banned Heroes</h3>
+            <div className="flex flex-wrap gap-2">
+              {Array.from(preBannedHeroes).map((hero) => (
+                <span key={hero} className="text-sm bg-orange-900/40 text-orange-200 px-2 py-1 rounded flex items-center gap-1">
+                  {hero}
+                  <button onClick={() => removePreBan(hero)} className="text-orange-300 hover:text-orange-200 text-xs">
+                    <X size={12} />
+                  </button>
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Current Draft Display */}
         {currentDraft.length > 0 && gamePhase === 'drafting' && (
@@ -385,12 +479,12 @@ const HotsDraftTool = () => {
                     <div className={`px-3 py-1 rounded text-sm font-semibold ${
                       game.winner === 'blue' ? 'bg-blue-600 text-white' : 'bg-red-600 text-white'
                     }`}>
-                      {game.winner === 'blue' ? 'Blue' : 'Red'} Team Won
+                      {teamNames[game.winner]} Won
                     </div>
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <h5 className="text-blue-400 font-semibold mb-2 text-sm">Blue Team Picks</h5>
+                      <h5 className="text-blue-400 font-semibold mb-2 text-sm">{teamNames.blue} Picks</h5>
                       <div className="flex flex-wrap gap-1">
                         {game.bluePicks.map((pick, pickIdx) => (
                           <span key={pickIdx} className="text-xs bg-blue-900/40 px-2 py-1 rounded">
@@ -400,7 +494,7 @@ const HotsDraftTool = () => {
                       </div>
                     </div>
                     <div>
-                      <h5 className="text-red-400 font-semibold mb-2 text-sm">Red Team Picks</h5>
+                      <h5 className="text-red-400 font-semibold mb-2 text-sm">{teamNames.red} Picks</h5>
                       <div className="flex flex-wrap gap-1">
                         {game.redPicks.map((pick, pickIdx) => (
                           <span key={pickIdx} className="text-xs bg-red-900/40 px-2 py-1 rounded">
@@ -421,7 +515,7 @@ const HotsDraftTool = () => {
           <div className="flex items-center gap-4">
             <span className="text-lg font-semibold">Hero Pool</span>
             <span className="text-slate-400">
-              Available: {availableHeroes.length} | Drafted: {draftedHeroes.size}
+              Available: {availableHeroes.length} | Drafted: {draftedHeroes.size} | Pre-banned: {preBannedHeroes.size}
             </span>
           </div>
           <div className="flex items-center gap-2">
@@ -448,16 +542,29 @@ const HotsDraftTool = () => {
         <div className="grid grid-cols-4 md:grid-cols-6 lg:grid-cols-8 xl:grid-cols-10 gap-2">
           {filteredHeroes.map((hero) => {
             const isDrafted = draftedHeroes.has(hero);
+            const isPreBanned = preBannedHeroes.has(hero);
+            const isDisabled = isDrafted || (gamePhase !== 'drafting' && gamePhase !== 'pre-ban');
+            
             return (
               <button
                 key={hero}
-                onClick={() => selectHero(hero)}
-                disabled={isDrafted || gamePhase !== 'drafting'}
+                onClick={() => {
+                  if (gamePhase === 'pre-ban' && isPreBanned) {
+                    removePreBan(hero);
+                  } else {
+                    selectHero(hero);
+                  }
+                }}
+                disabled={isDisabled}
                 className={`
                   p-3 rounded-lg text-sm font-medium transition-all duration-200 min-h-[60px] flex items-center justify-center text-center
-                  ${isDrafted 
+                  ${isPreBanned
+                    ? gamePhase === 'pre-ban'
+                      ? 'bg-orange-700 hover:bg-orange-600 text-orange-200 cursor-pointer border border-orange-500'
+                      : 'bg-orange-800 text-orange-300 cursor-not-allowed opacity-75 border border-orange-600'
+                    : isDrafted 
                     ? 'bg-slate-700 text-slate-500 cursor-not-allowed opacity-50' 
-                    : gamePhase === 'drafting'
+                    : (gamePhase === 'drafting' || gamePhase === 'pre-ban')
                     ? 'bg-slate-600 hover:bg-slate-500 text-white cursor-pointer transform hover:scale-105'
                     : 'bg-slate-600 text-slate-300 cursor-not-allowed'
                   }
@@ -483,6 +590,10 @@ const HotsDraftTool = () => {
             <div className="flex items-center gap-2">
               <div className="w-4 h-4 bg-slate-600 rounded"></div>
               <span>Available Hero</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-4 h-4 bg-orange-700 border border-orange-500 rounded"></div>
+              <span>Pre-banned Hero (click to remove)</span>
             </div>
             <div className="flex items-center gap-2">
               <div className="w-4 h-4 bg-slate-700 opacity-50 rounded"></div>
