@@ -8,21 +8,16 @@ import HeroGrid from './hero-grid';
 const HotsDraftTool = () => {
   // Sample hero data - in a real app, this would be comprehensive
   const allHeroes = [
-    // Assassins
-    'Azmodan', 'Cassia', 'Chromie', 'Falstad', 'Fenix', 'Gall', 'Genji', 'Greymane', 'Gul\'dan', 'Hanzo',
-    'Illidan', 'Jaina', 'Kael\'thas', 'Kel\'Thuzad', 'Kerrigan', 'Li-Ming', 'Lunara', 'Malthael', 'Mephisto',
-    'Nazeebo', 'Nova', 'Orphea', 'Probius', 'Qhira', 'Raynor', 'Sylvanas', 'Thrall', 'Tracer', 'Tychus',
-    'Valla', 'Zagara', 'Zeratul', 'Zuljin',
-    // Warriors/Tanks
-    'Anub\'arak', 'Arthas', 'Blaze', 'Chen', 'Cho', 'Diablo', 'E.T.C.', 'Garrosh', 'Johanna', 'Mal\'Ganis',
-    'Muradin', 'Stitches', 'Tyrael', 'Varian', 'Yrel',
-    // Bruisers
-    'Artanis', 'D.Va', 'Dehaka', 'Imperius', 'Leoric', 'Ragnaros', 'Rexxar', 'Sonya', 'The Butcher', 'Xul',
-    // Healers/Support
-    'Alexstrasza', 'Ana', 'Anduin', 'Auriel', 'Brightwing', 'Deckard', 'Kharazim', 'Li Li', 'Lt. Morales',
-    'Lucio', 'Malfurion', 'Rehgar', 'Stukov', 'Tyrande', 'Uther', 'Whitemane',
-    // Specialists (now mostly reclassified)
-    'Abathur', 'Gazlowe', 'Medivh', 'Murky', 'Sgt. Hammer', 'The Lost Vikings', 'Tassadar', 'Vikhr'
+    // Complete list of all 90 Heroes of the Storm characters
+    'Abathur', 'Alarak', 'Alexstrasza', 'Ana', 'Anduin', 'Anub\'arak', 'Artanis', 'Arthas', 'Auriel', 'Azmodan',
+    'Blaze', 'Brightwing', 'Cassia', 'Chen', 'Cho', 'Chromie', 'D.Va', 'Deckard', 'Deathwing', 'Dehaka',
+    'Diablo', 'E.T.C.', 'Falstad', 'Fenix', 'Gall', 'Garrosh', 'Gazlowe', 'Genji', 'Greymane', 'Gul\'dan',
+    'Hanzo', 'Hogger', 'Illidan', 'Imperius', 'Jaina', 'Johanna', 'Junkrat', 'Kael\'thas', 'Kel\'Thuzad', 'Kerrigan',
+    'Kharazim', 'Leoric', 'Li Li', 'Li-Ming', 'Lt. Morales', 'Lucio', 'Lunara', 'Maiev', 'Mal\'Ganis', 'Malfurion',
+    'Malthael', 'Medivh', 'Mei', 'Mephisto', 'Muradin', 'Murky', 'Nazeebo', 'Nova', 'Orphea', 'Probius',
+    'Qhira', 'Ragnaros', 'Raynor', 'Rehgar', 'Rexxar', 'Samuro', 'Sgt. Hammer', 'Sonya', 'Stitches', 'Stukov',
+    'Sylvanas', 'Tassadar', 'The Butcher', 'The Lost Vikings', 'Thrall', 'Tracer', 'Tyrael', 'Tyrande', 'Tychus', 'Uther',
+    'Valeera', 'Valla', 'Varian', 'Whitemane', 'Xul', 'Yrel', 'Zagara', 'Zeratul', 'Zuljin', 'Vikhr'
   ].sort();
 
   const allMaps = [
