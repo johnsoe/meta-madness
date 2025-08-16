@@ -19,7 +19,7 @@ const Legend = () => {
         </div>
         <div className="flex items-center gap-2">
           <div className="w-4 h-4 bg-slate-700 opacity-50 rounded"></div>
-          <span>Drafted Hero</span>
+          <span>Drafted Hero (Permanently Disabled)</span>
         </div>
       </div>
     </div>

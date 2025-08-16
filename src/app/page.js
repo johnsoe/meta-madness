@@ -48,7 +48,8 @@ const HotsDraftTool = () => {
   const [editingName, setEditingName] = useState('');
   const [currentGame, setCurrentGame] = useState(1);
   const [teamScores, setTeamScores] = useState({ blue: 0, red: 0 });
-  const [draftedHeroes, setDraftedHeroes] = useState(new Set());
+  const [draftedHeroes, setDraftedHeroes] = useState(new Set()); // Heroes drafted in current game
+  const [seriesDraftedHeroes, setSeriesDraftedHeroes] = useState(new Set()); // All heroes drafted across series
   const [bannedHeroes, setBannedHeroes] = useState(new Set()); // Heroes banned during current draft
   const [currentDraft, setCurrentDraft] = useState([]);
   const [gameHistory, setGameHistory] = useState([]); // Store completed games
@@ -58,7 +59,7 @@ const HotsDraftTool = () => {
   const [selectedMap, setSelectedMap] = useState(''); // Selected map for current game
   const [gameMapHistory, setGameMapHistory] = useState([]); // Track maps used in each game
 
-  const availableHeroes = allHeroes.filter(hero => !draftedHeroes.has(hero) && !preBannedHeroes.has(hero) && !bannedHeroes.has(hero));
+  const availableHeroes = allHeroes.filter(hero => !seriesDraftedHeroes.has(hero) && !preBannedHeroes.has(hero) && !bannedHeroes.has(hero));
   const maxGames = Math.ceil(seriesFormat / 2);
 
   // Draft order: Blue(ban) -> Red(ban) -> Blue(ban) -> Red(ban) -> Blue(pick) -> Red(pick 2) -> Blue(pick 2) -> Red(ban) -> Blue(ban) -> Red(pick 2) -> Blue(pick 2) -> Red(pick)
@@ -120,6 +121,7 @@ const HotsDraftTool = () => {
     setCurrentGame(1);
     setTeamScores({ blue: 0, red: 0 });
     setDraftedHeroes(new Set());
+    setSeriesDraftedHeroes(new Set());
     setBannedHeroes(new Set());
     setPreBannedHeroes(new Set());
     setPreBanPhase(preBanEnabled);
@@ -197,6 +199,9 @@ const HotsDraftTool = () => {
       const newDrafted = new Set([...draftedHeroes, hero]);
       setDraftedHeroes(newDrafted);
       
+      // Also add to series-wide tracking
+      setSeriesDraftedHeroes(prev => new Set([...prev, hero]));
+      
       const newDraftEntry = { 
         hero, 
         team: currentDraftStep.team, 
@@ -239,12 +244,13 @@ const HotsDraftTool = () => {
     } else {
       setCurrentGame(currentGame + 1);
       setCurrentDraft([]);
-      setDraftedHeroes(new Set());
+      setDraftedHeroes(new Set()); // Clear current game draft
       setBannedHeroes(new Set());
       setSelectedMap('');
       setCurrentStep(1);
       setCurrentTeam(adjustedDraftOrder[0]?.team || 'blue');
       setGamePhase('drafting');
+      // Note: seriesDraftedHeroes is NOT cleared, so heroes from previous games remain disabled
     }
   };
 
@@ -484,6 +490,20 @@ const HotsDraftTool = () => {
           </div>
         )}
 
+        {/* Series Drafted Heroes Display */}
+        {seriesDraftedHeroes.size > 0 && (
+          <div className="mb-6 p-4 bg-slate-800 rounded-lg">
+            <h3 className="text-lg font-semibold mb-3 text-slate-400">Series Drafted Heroes (Permanently Disabled)</h3>
+            <div className="flex flex-wrap gap-2">
+              {Array.from(seriesDraftedHeroes).map((hero) => (
+                <span key={hero} className="text-sm bg-slate-700 text-slate-300 px-2 py-1 rounded">
+                  {hero}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* Current Draft Display */}
         {currentDraft.length > 0 && gamePhase === 'drafting' && (
           <div className="mb-6 p-4 bg-slate-800 rounded-lg">
@@ -614,7 +634,7 @@ const HotsDraftTool = () => {
         <HeroGrid 
           allHeroes={allHeroes}
           availableHeroes={availableHeroes}
-          draftedHeroes={draftedHeroes}
+          draftedHeroes={seriesDraftedHeroes}
           bannedHeroes={bannedHeroes}
           preBannedHeroes={preBannedHeroes}
           gamePhase={gamePhase}
