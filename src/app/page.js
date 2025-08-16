@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { RotateCcw, Trophy, Users, Edit2, Check, X } from 'lucide-react';
 import Legend from './legend';
 import GameHistory from './game-history';
+import HeroGrid from './hero-grid';
 
 const HotsDraftTool = () => {
   // Sample hero data - in a real app, this would be comprehensive
@@ -59,14 +60,10 @@ const HotsDraftTool = () => {
   const [currentPick, setCurrentPick] = useState(1);
   const [picksInCurrentTurn, setPicksInCurrentTurn] = useState(0);
   const [gamePhase, setGamePhase] = useState('drafting'); // 'drafting', 'game-complete', 'series-complete'
-  const [searchTerm, setSearchTerm] = useState(''); // Hero search filter
   const [selectedMap, setSelectedMap] = useState(''); // Selected map for current game
   const [gameMapHistory, setGameMapHistory] = useState([]); // Track maps used in each game
 
   const availableHeroes = allHeroes.filter(hero => !draftedHeroes.has(hero) && !preBannedHeroes.has(hero));
-  const filteredHeroes = allHeroes.filter(hero => 
-    hero.toLowerCase().includes(searchTerm.toLowerCase())
-  );
   const maxGames = Math.ceil(seriesFormat / 2);
 
   // Snake draft order: Blue(1) -> Red(2) -> Blue(2) -> Red(2) -> Blue(2) -> Red(1)
@@ -244,7 +241,7 @@ const HotsDraftTool = () => {
               value={selectedMap} 
               onChange={(e) => setSelectedMap(e.target.value)}
               className="bg-slate-700 text-white px-3 py-1 rounded min-w-[180px]"
-              disabled={gamePhase === 'game-complete' || gamePhase === 'series-complete'}
+              disabled={gamePhase === 'series-complete'}
             >
               <option value="">Select Map...</option>
               {allMaps.map(map => (
@@ -522,78 +519,16 @@ const HotsDraftTool = () => {
         {/* Game History */}
         <GameHistory gameHistory={gameHistory} teamNames={teamNames} />
 
-        {/* Hero Pool Status and Search */}
-        <div className="mb-4 flex items-center justify-between flex-wrap gap-4">
-          <div className="flex items-center gap-4">
-            <span className="text-lg font-semibold">Hero Pool</span>
-            <span className="text-slate-400">
-              Available: {availableHeroes.length} | Drafted: {draftedHeroes.size} | Pre-banned: {preBannedHeroes.size}
-            </span>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="text-slate-300">Search:</span>
-            <input
-              type="text"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder="Filter heroes..."
-              className="bg-slate-700 text-white px-3 py-1 rounded border border-slate-600 focus:border-slate-500 focus:outline-none w-48"
-            />
-            {searchTerm && (
-              <button
-                onClick={() => setSearchTerm('')}
-                className="text-slate-400 hover:text-white text-sm px-2 py-1 hover:bg-slate-600 rounded transition-colors"
-              >
-                Clear
-              </button>
-            )}
-          </div>
-        </div>
-
-        {/* Hero Grid */}
-        <div className="grid grid-cols-4 md:grid-cols-6 lg:grid-cols-8 xl:grid-cols-10 gap-2">
-          {filteredHeroes.map((hero) => {
-            const isDrafted = draftedHeroes.has(hero);
-            const isPreBanned = preBannedHeroes.has(hero);
-            const isDisabled = isDrafted || (gamePhase !== 'drafting' && gamePhase !== 'pre-ban');
-            
-            return (
-              <button
-                key={hero}
-                onClick={() => {
-                  if (gamePhase === 'pre-ban' && isPreBanned) {
-                    removePreBan(hero);
-                  } else {
-                    selectHero(hero);
-                  }
-                }}
-                disabled={isDisabled}
-                className={`
-                  p-3 rounded-lg text-sm font-medium transition-all duration-200 min-h-[60px] flex items-center justify-center text-center
-                  ${isPreBanned
-                    ? gamePhase === 'pre-ban'
-                      ? 'bg-orange-700 hover:bg-orange-600 text-orange-200 cursor-pointer border border-orange-500'
-                      : 'bg-orange-800 text-orange-300 cursor-not-allowed opacity-75 border border-orange-600'
-                    : isDrafted 
-                    ? 'bg-slate-700 text-slate-500 cursor-not-allowed opacity-50' 
-                    : (gamePhase === 'drafting' || gamePhase === 'pre-ban')
-                    ? 'bg-slate-600 hover:bg-slate-500 text-white cursor-pointer transform hover:scale-105'
-                    : 'bg-slate-600 text-slate-300 cursor-not-allowed'
-                  }
-                `}
-              >
-                {hero}
-              </button>
-            );
-          })}
-        </div>
-
-        {/* No results message */}
-        {filteredHeroes.length === 0 && searchTerm && (
-          <div className="text-center py-8 text-slate-400">
-            No heroes found matching "{searchTerm}"
-          </div>
-        )}
+        {/* Hero Grid with Search */}
+        <HeroGrid 
+          allHeroes={allHeroes}
+          availableHeroes={availableHeroes}
+          draftedHeroes={draftedHeroes}
+          preBannedHeroes={preBannedHeroes}
+          gamePhase={gamePhase}
+          onSelectHero={selectHero}
+          onRemovePreBan={removePreBan}
+        />
 
         {/* Legend */}
         <Legend />

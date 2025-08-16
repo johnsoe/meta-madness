@@ -1,0 +1,99 @@
+import React, { useState } from 'react';
+import { X } from 'lucide-react';
+
+const HeroGrid = ({ 
+  allHeroes, 
+  availableHeroes, 
+  draftedHeroes, 
+  preBannedHeroes, 
+  gamePhase, 
+  onSelectHero, 
+  onRemovePreBan 
+}) => {
+  const [searchTerm, setSearchTerm] = useState('');
+
+  const filteredHeroes = allHeroes.filter(hero => 
+    hero.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const handleHeroClick = (hero) => {
+    if (gamePhase === 'pre-ban' && preBannedHeroes.has(hero)) {
+      onRemovePreBan(hero);
+    } else {
+      onSelectHero(hero);
+    }
+  };
+
+  {/* Hero Pool Status and Search */}
+  return (
+    <div>
+      <div className="mb-4 flex items-center justify-between flex-wrap gap-4">
+        <div className="flex items-center gap-4">
+          <span className="text-lg font-semibold">Hero Pool</span>
+          <span className="text-slate-400">
+            Available: {availableHeroes.length} | Drafted: {draftedHeroes.size} | Pre-banned: {preBannedHeroes.size}
+          </span>
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="text-slate-300">Search:</span>
+          <input
+            type="text"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            placeholder="Filter heroes..."
+            className="bg-slate-700 text-white px-3 py-1 rounded border border-slate-600 focus:border-slate-500 focus:outline-none w-48"
+          />
+          {searchTerm && (
+            <button
+              onClick={() => setSearchTerm('')}
+              className="text-slate-400 hover:text-white text-sm px-2 py-1 hover:bg-slate-600 rounded transition-colors"
+            >
+              Clear
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* Hero Grid */}
+      <div className="grid grid-cols-4 md:grid-cols-6 lg:grid-cols-8 xl:grid-cols-10 gap-2">
+        {filteredHeroes.map((hero) => {
+          const isDrafted = draftedHeroes.has(hero);
+          const isPreBanned = preBannedHeroes.has(hero);
+          const isDisabled = isDrafted || (gamePhase !== 'drafting' && gamePhase !== 'pre-ban');
+          
+          return (
+            <button
+              key={hero}
+              onClick={() => handleHeroClick(hero)}
+              disabled={isDisabled}
+              className={`
+                p-3 rounded-lg text-sm font-medium transition-all duration-200 min-h-[60px] flex items-center justify-center text-center
+                ${isPreBanned
+                  ? gamePhase === 'pre-ban'
+                    ? 'bg-orange-700 hover:bg-orange-600 text-orange-200 cursor-pointer border border-orange-500'
+                    : 'bg-orange-800 text-orange-300 cursor-not-allowed opacity-75 border border-orange-600'
+                  : isDrafted 
+                  ? 'bg-slate-700 text-slate-500 cursor-not-allowed opacity-50' 
+                  : (gamePhase === 'drafting' || gamePhase === 'pre-ban')
+                  ? 'bg-slate-600 hover:bg-slate-500 text-white cursor-pointer transform hover:scale-105'
+                  : 'bg-slate-600 text-slate-300 cursor-not-allowed'
+                }
+              `}
+            >
+              {hero}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* No results message */}
+      {filteredHeroes.length === 0 && searchTerm && (
+        <div className="text-center py-8 text-slate-400">
+          No heroes found matching "{searchTerm}"
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default HeroGrid;
