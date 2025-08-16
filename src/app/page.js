@@ -1,6 +1,7 @@
 "use client";
 import React, { useState, useEffect } from 'react';
 import { RotateCcw, Trophy, Users, Edit2, Check, X } from 'lucide-react';
+import Legend from './legend';
 
 const HotsDraftTool = () => {
   // Sample hero data - in a real app, this would be comprehensive
@@ -22,6 +23,24 @@ const HotsDraftTool = () => {
     'Abathur', 'Gazlowe', 'Medivh', 'Murky', 'Sgt. Hammer', 'The Lost Vikings', 'Tassadar', 'Vikhr'
   ].sort();
 
+  const allMaps = [
+    'Alterac Pass',
+    'Battlefield of Eternity',
+    'Blackheart\'s Bay',
+    'Braxis Holdout',
+    'Cursed Hollow',
+    'Dragon Shire',
+    'Garden of Terror',
+    'Hanamura Temple',
+    'Haunted Mines',
+    'Infernal Shrines',
+    'Sky Temple',
+    'Tomb of the Spider Queen',
+    'Towers of Doom',
+    'Volskaya Foundry',
+    'Warhead Junction'
+  ].sort();
+
   const [seriesFormat, setSeriesFormat] = useState(3); // 3 or 5
   const [firstPickTeam, setFirstPickTeam] = useState('blue'); // Which team picks first
   const [preBanEnabled, setPreBanEnabled] = useState(false); // Whether pre-banning is enabled
@@ -40,6 +59,8 @@ const HotsDraftTool = () => {
   const [picksInCurrentTurn, setPicksInCurrentTurn] = useState(0);
   const [gamePhase, setGamePhase] = useState('drafting'); // 'drafting', 'game-complete', 'series-complete'
   const [searchTerm, setSearchTerm] = useState(''); // Hero search filter
+  const [selectedMap, setSelectedMap] = useState(''); // Selected map for current game
+  const [gameMapHistory, setGameMapHistory] = useState([]); // Track maps used in each game
 
   const availableHeroes = allHeroes.filter(hero => !draftedHeroes.has(hero) && !preBannedHeroes.has(hero));
   const filteredHeroes = allHeroes.filter(hero => 
@@ -83,6 +104,8 @@ const HotsDraftTool = () => {
     setPreBanPhase(preBanEnabled);
     setCurrentDraft([]);
     setGameHistory([]);
+    setGameMapHistory([]);
+    setSelectedMap('');
     setCurrentTeam(firstPickTeam);
     setCurrentPick(1);
     setPicksInCurrentTurn(0);
@@ -162,11 +185,13 @@ const HotsDraftTool = () => {
     const completedGame = {
       gameNumber: currentGame,
       winner: winner,
+      map: selectedMap,
       draft: currentDraft,
       bluePicks: getTeamDraft('blue'),
       redPicks: getTeamDraft('red')
     };
     setGameHistory(prev => [...prev, completedGame]);
+    setGameMapHistory(prev => [...prev, selectedMap]);
 
     const newScores = { ...teamScores };
     newScores[winner]++;
@@ -177,6 +202,7 @@ const HotsDraftTool = () => {
     } else {
       setCurrentGame(currentGame + 1);
       setCurrentDraft([]);
+      setSelectedMap('');
       setCurrentTeam(firstPickTeam);
       setCurrentPick(1);
       setPicksInCurrentTurn(0);
@@ -209,6 +235,20 @@ const HotsDraftTool = () => {
             >
               <option value={3}>Best of 3</option>
               <option value={5}>Best of 5</option>
+            </select>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="text-slate-300">Map:</span>
+            <select 
+              value={selectedMap} 
+              onChange={(e) => setSelectedMap(e.target.value)}
+              className="bg-slate-700 text-white px-3 py-1 rounded min-w-[180px]"
+              disabled={gamePhase === 'game-complete' || gamePhase === 'series-complete'}
+            >
+              <option value="">Select Map...</option>
+              {allMaps.map(map => (
+                <option key={map} value={map}>{map}</option>
+              ))}
             </select>
           </div>
           <div className="flex items-center gap-2">
@@ -318,7 +358,10 @@ const HotsDraftTool = () => {
               </div>
             ) : (
               <div>
-                <div className="text-slate-300 font-semibold mb-2">Game {currentGame}</div>
+                <div className="text-slate-300 font-semibold mb-2">
+                  Game {currentGame}
+                  {selectedMap && <div className="text-sm text-purple-400 font-normal">Map: {selectedMap}</div>}
+                </div>
                 {gamePhase === 'drafting' ? (
                   <div className="text-sm">
                     <div className={`font-semibold ${currentTeam === 'blue' ? 'text-blue-400' : 'text-red-400'}`}>
@@ -424,7 +467,10 @@ const HotsDraftTool = () => {
         {/* Game Complete Actions */}
         {gamePhase === 'game-complete' && (
           <div className="mb-6 p-4 bg-slate-800 rounded-lg text-center">
-            <h3 className="text-lg font-semibold mb-4">Game {currentGame} Complete - Who Won?</h3>
+            <h3 className="text-lg font-semibold mb-2">Game {currentGame} Complete - Who Won?</h3>
+            {selectedMap && (
+              <div className="text-purple-400 font-medium mb-4">Map: {selectedMap}</div>
+            )}
             
             {/* Show current game draft */}
             <div className="grid grid-cols-2 gap-4 mb-6 text-left">
@@ -454,16 +500,21 @@ const HotsDraftTool = () => {
               <button 
                 onClick={() => completeGame('blue')}
                 className="px-6 py-3 bg-blue-600 hover:bg-blue-700 rounded font-semibold transition-colors"
+                disabled={!selectedMap}
               >
                 {teamNames.blue} Won
               </button>
               <button 
                 onClick={() => completeGame('red')}
                 className="px-6 py-3 bg-red-600 hover:bg-red-700 rounded font-semibold transition-colors"
+                disabled={!selectedMap}
               >
                 {teamNames.red} Won
               </button>
             </div>
+            {!selectedMap && (
+              <div className="text-yellow-400 text-sm mt-2">Please select a map before declaring the winner</div>
+            )}
           </div>
         )}
 
@@ -475,7 +526,10 @@ const HotsDraftTool = () => {
               {gameHistory.map((game, idx) => (
                 <div key={idx} className="bg-slate-700 p-4 rounded-lg">
                   <div className="flex items-center justify-between mb-3">
-                    <h4 className="font-semibold">Game {game.gameNumber}</h4>
+                    <div>
+                      <h4 className="font-semibold">Game {game.gameNumber}</h4>
+                      {game.map && <div className="text-sm text-purple-400">Map: {game.map}</div>}
+                    </div>
                     <div className={`px-3 py-1 rounded text-sm font-semibold ${
                       game.winner === 'blue' ? 'bg-blue-600 text-white' : 'bg-red-600 text-white'
                     }`}>
@@ -584,23 +638,7 @@ const HotsDraftTool = () => {
         )}
 
         {/* Legend */}
-        <div className="mt-6 p-4 bg-slate-800 rounded-lg">
-          <h3 className="font-semibold mb-2">Legend</h3>
-          <div className="flex flex-wrap gap-4 text-sm">
-            <div className="flex items-center gap-2">
-              <div className="w-4 h-4 bg-slate-600 rounded"></div>
-              <span>Available Hero</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-4 h-4 bg-orange-700 border border-orange-500 rounded"></div>
-              <span>Pre-banned Hero (click to remove)</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-4 h-4 bg-slate-700 opacity-50 rounded"></div>
-              <span>Drafted Hero</span>
-            </div>
-          </div>
-        </div>
+        <Legend />
       </div>
     </div>
   );
