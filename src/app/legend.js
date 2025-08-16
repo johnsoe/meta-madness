@@ -14,6 +14,10 @@ const Legend = () => {
           <span>Pre-banned Hero (click to remove)</span>
         </div>
         <div className="flex items-center gap-2">
+          <div className="w-4 h-4 bg-red-800 border border-red-600 rounded"></div>
+          <span>Banned Hero</span>
+        </div>
+        <div className="flex items-center gap-2">
           <div className="w-4 h-4 bg-slate-700 opacity-50 rounded"></div>
           <span>Drafted Hero</span>
         </div>

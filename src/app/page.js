@@ -49,24 +49,51 @@ const HotsDraftTool = () => {
   const [currentGame, setCurrentGame] = useState(1);
   const [teamScores, setTeamScores] = useState({ blue: 0, red: 0 });
   const [draftedHeroes, setDraftedHeroes] = useState(new Set());
+  const [bannedHeroes, setBannedHeroes] = useState(new Set()); // Heroes banned during current draft
   const [currentDraft, setCurrentDraft] = useState([]);
   const [gameHistory, setGameHistory] = useState([]); // Store completed games
   const [currentTeam, setCurrentTeam] = useState('blue');
-  const [currentPick, setCurrentPick] = useState(1);
-  const [picksInCurrentTurn, setPicksInCurrentTurn] = useState(0);
+  const [currentStep, setCurrentStep] = useState(1); // Current step in draft (1-12)
   const [gamePhase, setGamePhase] = useState('drafting'); // 'drafting', 'game-complete', 'series-complete'
   const [selectedMap, setSelectedMap] = useState(''); // Selected map for current game
   const [gameMapHistory, setGameMapHistory] = useState([]); // Track maps used in each game
 
-  const availableHeroes = allHeroes.filter(hero => !draftedHeroes.has(hero) && !preBannedHeroes.has(hero));
+  const availableHeroes = allHeroes.filter(hero => !draftedHeroes.has(hero) && !preBannedHeroes.has(hero) && !bannedHeroes.has(hero));
   const maxGames = Math.ceil(seriesFormat / 2);
 
-  // Snake draft order: Blue(1) -> Red(2) -> Blue(2) -> Red(2) -> Blue(2) -> Red(1)
-  const getPicksForCurrentTurn = () => {
-    if (currentPick === 1) return 1; // Blue's first pick
-    if (currentPick === 10) return 1; // Red's last pick
-    return 2; // All other picks are 2 at a time
+  // Draft order: Blue(ban) -> Red(ban) -> Blue(ban) -> Red(ban) -> Blue(pick) -> Red(pick 2) -> Blue(pick 2) -> Red(ban) -> Blue(ban) -> Red(pick 2) -> Blue(pick 2) -> Red(pick)
+  const draftOrder = [
+    { team: 'blue', action: 'ban' },   
+    { team: 'red', action: 'ban' },    
+    { team: 'blue', action: 'ban' },   
+    { team: 'red', action: 'ban' },    
+    { team: 'blue', action: 'pick' },  
+    { team: 'red', action: 'pick' },   
+    { team: 'red', action: 'pick' },   
+    { team: 'blue', action: 'pick' },
+    { team: 'blue', action: 'pick' },  
+    { team: 'red', action: 'ban' },    
+    { team: 'blue', action: 'ban' },   
+    { team: 'red', action: 'pick' }, 
+    { team: 'red', action: 'pick' }, 
+    { team: 'blue', action: 'pick' },
+    { team: 'blue', action: 'pick' },
+    { team: 'red', action: 'pick' },
+  ];
+
+  // Adjust draft order based on first pick team
+  const adjustedDraftOrder = draftOrder.map(step => {
+    if (firstPickTeam === 'red') {
+      return { ...step, team: step.team === 'blue' ? 'red' : 'blue' };
+    }
+    return step;
+  });
+
+  const getCurrentDraftStep = () => {
+    return adjustedDraftOrder[currentStep - 1] || { team: 'blue', action: 'pick' };
   };
+
+  const currentDraftStep = getCurrentDraftStep();
 
   const startEditingTeam = (team) => {
     setEditingTeam(team);
@@ -93,15 +120,15 @@ const HotsDraftTool = () => {
     setCurrentGame(1);
     setTeamScores({ blue: 0, red: 0 });
     setDraftedHeroes(new Set());
+    setBannedHeroes(new Set());
     setPreBannedHeroes(new Set());
     setPreBanPhase(preBanEnabled);
     setCurrentDraft([]);
     setGameHistory([]);
     setGameMapHistory([]);
     setSelectedMap('');
-    setCurrentTeam(firstPickTeam);
-    setCurrentPick(1);
-    setPicksInCurrentTurn(0);
+    setCurrentStep(1);
+    setCurrentTeam(adjustedDraftOrder[0]?.team || 'blue');
     setGamePhase(preBanEnabled ? 'pre-ban' : 'drafting');
   };
 
@@ -149,27 +176,42 @@ const HotsDraftTool = () => {
       return;
     }
     
-    if (draftedHeroes.has(hero) || preBannedHeroes.has(hero) || gamePhase !== 'drafting') return;
+    if (draftedHeroes.has(hero) || preBannedHeroes.has(hero) || bannedHeroes.has(hero) || gamePhase !== 'drafting') return;
 
-    const newDraft = [...currentDraft, { hero, team: currentTeam, pick: currentPick }];
-    setCurrentDraft(newDraft);
-    setDraftedHeroes(prev => new Set([...prev, hero]));
-
-    const newPicksInTurn = picksInCurrentTurn + 1;
-    const requiredPicksThisTurn = getPicksForCurrentTurn();
-
-    if (currentPick === 10) {
-      setGamePhase('game-complete');
-    } else if (newPicksInTurn >= requiredPicksThisTurn) {
-      // Turn complete, switch teams and reset picks in turn
-      const nextTeam = currentTeam === 'blue' ? 'red' : 'blue';
-      setCurrentTeam(nextTeam);
-      setCurrentPick(currentPick + 1);
-      setPicksInCurrentTurn(0);
+    const currentAction = currentDraftStep.action;
+    
+    if (currentAction === 'ban') {
+      // Ban the hero
+      const newBanned = new Set([...bannedHeroes, hero]);
+      setBannedHeroes(newBanned);
+      
+      const newDraftEntry = { 
+        hero, 
+        team: currentDraftStep.team, 
+        action: 'ban', 
+        step: currentStep 
+      };
+      setCurrentDraft(prev => [...prev, newDraftEntry]);
     } else {
-      // Continue with same team
-      setCurrentPick(currentPick + 1);
-      setPicksInCurrentTurn(newPicksInTurn);
+      // Pick the hero
+      const newDrafted = new Set([...draftedHeroes, hero]);
+      setDraftedHeroes(newDrafted);
+      
+      const newDraftEntry = { 
+        hero, 
+        team: currentDraftStep.team, 
+        action: 'pick', 
+        step: currentStep 
+      };
+      setCurrentDraft(prev => [...prev, newDraftEntry]);
+    }
+
+    if (currentStep === draftOrder.length) {
+      setGamePhase('game-complete');
+    } else {
+      const nextStep = currentStep + 1;
+      setCurrentStep(nextStep);
+      setCurrentTeam(adjustedDraftOrder[nextStep - 1]?.team || 'blue');
     }
   };
 
@@ -180,8 +222,10 @@ const HotsDraftTool = () => {
       winner: winner,
       map: selectedMap,
       draft: currentDraft,
-      bluePicks: getTeamDraft('blue'),
-      redPicks: getTeamDraft('red')
+      bluePicks: getTeamPicks('blue'),
+      redPicks: getTeamPicks('red'),
+      blueBans: getTeamBans('blue'),
+      redBans: getTeamBans('red')
     };
     setGameHistory(prev => [...prev, completedGame]);
     setGameMapHistory(prev => [...prev, selectedMap]);
@@ -195,16 +239,21 @@ const HotsDraftTool = () => {
     } else {
       setCurrentGame(currentGame + 1);
       setCurrentDraft([]);
+      setDraftedHeroes(new Set());
+      setBannedHeroes(new Set());
       setSelectedMap('');
-      setCurrentTeam(firstPickTeam);
-      setCurrentPick(1);
-      setPicksInCurrentTurn(0);
+      setCurrentStep(1);
+      setCurrentTeam(adjustedDraftOrder[0]?.team || 'blue');
       setGamePhase('drafting');
     }
   };
 
-  const getTeamDraft = (team) => {
-    return currentDraft.filter(pick => pick.team === team);
+  const getTeamPicks = (team) => {
+    return currentDraft.filter(entry => entry.team === team && entry.action === 'pick');
+  };
+
+  const getTeamBans = (team) => {
+    return currentDraft.filter(entry => entry.team === team && entry.action === 'ban');
   };
 
   return (
@@ -266,10 +315,18 @@ const HotsDraftTool = () => {
               value={firstPickTeam} 
               onChange={(e) => {
                 setFirstPickTeam(e.target.value);
-                setCurrentTeam(e.target.value);
+                // Update current team to match the first step of the draft order
+                const newFirstPickTeam = e.target.value;
+                const newDraftOrder = draftOrder.map(step => {
+                  if (newFirstPickTeam === 'red') {
+                    return { ...step, team: step.team === 'blue' ? 'red' : 'blue' };
+                  }
+                  return step;
+                });
+                setCurrentTeam(newDraftOrder[0]?.team || 'blue');
               }}
               className="bg-slate-700 text-white px-3 py-1 rounded"
-              disabled={gamePhase !== 'drafting' || currentPick > 1}
+              disabled={gamePhase !== 'drafting'}
             >
               <option value="blue">{teamNames.blue}</option>
               <option value="red">{teamNames.red}</option>
@@ -357,12 +414,11 @@ const HotsDraftTool = () => {
                 </div>
                 {gamePhase === 'drafting' ? (
                   <div className="text-sm">
-                    <div className={`font-semibold ${currentTeam === 'blue' ? 'text-blue-400' : 'text-red-400'}`}>
-                      {teamNames[currentTeam]}
+                    <div className={`font-semibold ${currentDraftStep.team === 'blue' ? 'text-blue-400' : 'text-red-400'}`}>
+                      {teamNames[currentDraftStep.team]}
                     </div>
-                    <div className="text-xs text-slate-400">
-                      Pick {picksInCurrentTurn + 1} of {getPicksForCurrentTurn()} 
-                      ({currentPick}/10 total)
+                    <div className="text-xs text-slate-400 capitalize">
+                      {currentDraftStep.action} ({currentStep}/14)
                     </div>
                   </div>
                 ) : (
@@ -436,9 +492,16 @@ const HotsDraftTool = () => {
               <div>
                 <h4 className="text-blue-400 font-semibold mb-2">{teamNames.blue}</h4>
                 <div className="space-y-1">
-                  {getTeamDraft('blue').map((pick, idx) => (
+                  <div className="text-xs text-slate-400 mb-1">Picks:</div>
+                  {getTeamPicks('blue').map((entry, idx) => (
                     <div key={idx} className="text-sm bg-blue-900/30 px-2 py-1 rounded">
-                      {pick.hero}
+                      {entry.hero}
+                    </div>
+                  ))}
+                  <div className="text-xs text-slate-400 mb-1 mt-2">Bans:</div>
+                  {getTeamBans('blue').map((entry, idx) => (
+                    <div key={idx} className="text-sm bg-orange-900/30 px-2 py-1 rounded text-orange-200">
+                      {entry.hero}
                     </div>
                   ))}
                 </div>
@@ -446,9 +509,16 @@ const HotsDraftTool = () => {
               <div>
                 <h4 className="text-red-400 font-semibold mb-2">{teamNames.red}</h4>
                 <div className="space-y-1">
-                  {getTeamDraft('red').map((pick, idx) => (
+                  <div className="text-xs text-slate-400 mb-1">Picks:</div>
+                  {getTeamPicks('red').map((entry, idx) => (
                     <div key={idx} className="text-sm bg-red-900/30 px-2 py-1 rounded">
-                      {pick.hero}
+                      {entry.hero}
+                    </div>
+                  ))}
+                  <div className="text-xs text-slate-400 mb-1 mt-2">Bans:</div>
+                  {getTeamBans('red').map((entry, idx) => (
+                    <div key={idx} className="text-sm bg-orange-900/30 px-2 py-1 rounded text-orange-200">
+                      {entry.hero}
                     </div>
                   ))}
                 </div>
@@ -469,22 +539,48 @@ const HotsDraftTool = () => {
             <div className="grid grid-cols-2 gap-4 mb-6 text-left">
               <div className="bg-blue-900/20 p-3 rounded">
                 <h4 className="text-blue-400 font-semibold mb-2">{teamNames.blue}</h4>
-                <div className="space-y-1">
-                  {getTeamDraft('blue').map((pick, idx) => (
-                    <div key={idx} className="text-sm bg-blue-900/30 px-2 py-1 rounded">
-                      {pick.hero}
-                    </div>
-                  ))}
+                <div className="mb-3">
+                  <div className="text-xs text-slate-400 mb-1">Picks:</div>
+                  <div className="space-y-1">
+                    {getTeamPicks('blue').map((entry, idx) => (
+                      <div key={idx} className="text-sm bg-blue-900/30 px-2 py-1 rounded">
+                        {entry.hero}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <div className="text-xs text-slate-400 mb-1">Bans:</div>
+                  <div className="space-y-1">
+                    {getTeamBans('blue').map((entry, idx) => (
+                      <div key={idx} className="text-sm bg-orange-900/30 px-2 py-1 rounded text-orange-200">
+                        {entry.hero}
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
               <div className="bg-red-900/20 p-3 rounded">
                 <h4 className="text-red-400 font-semibold mb-2">{teamNames.red}</h4>
-                <div className="space-y-1">
-                  {getTeamDraft('red').map((pick, idx) => (
-                    <div key={idx} className="text-sm bg-red-900/30 px-2 py-1 rounded">
-                      {pick.hero}
-                    </div>
-                  ))}
+                <div className="mb-3">
+                  <div className="text-xs text-slate-400 mb-1">Picks:</div>
+                  <div className="space-y-1">
+                    {getTeamPicks('red').map((entry, idx) => (
+                      <div key={idx} className="text-sm bg-red-900/30 px-2 py-1 rounded">
+                        {entry.hero}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <div className="text-xs text-slate-400 mb-1">Bans:</div>
+                  <div className="space-y-1">
+                    {getTeamBans('red').map((entry, idx) => (
+                      <div key={idx} className="text-sm bg-orange-900/30 px-2 py-1 rounded text-orange-200">
+                        {entry.hero}
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
             </div>
@@ -519,8 +615,10 @@ const HotsDraftTool = () => {
           allHeroes={allHeroes}
           availableHeroes={availableHeroes}
           draftedHeroes={draftedHeroes}
+          bannedHeroes={bannedHeroes}
           preBannedHeroes={preBannedHeroes}
           gamePhase={gamePhase}
+          currentAction={currentDraftStep.action}
           onSelectHero={selectHero}
           onRemovePreBan={removePreBan}
         />
