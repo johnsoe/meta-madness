@@ -1,9 +1,10 @@
 "use client";
 import React, { useState, useEffect } from 'react';
-import { RotateCcw, Trophy, Users, Edit2, Check, X } from 'lucide-react';
+import { RotateCcw, Trophy, Users, X } from 'lucide-react';
 import Legend from './legend';
 import GameHistory from './game-history';
 import HeroGrid from './hero-grid';
+import TeamScore from './team-score';
 
 const HotsDraftTool = () => {
   // Sample hero data - in a real app, this would be comprehensive
@@ -44,8 +45,6 @@ const HotsDraftTool = () => {
   const [preBannedHeroes, setPreBannedHeroes] = useState(new Set());
   const [preBanPhase, setPreBanPhase] = useState(false); // Are we in pre-ban phase?
   const [teamNames, setTeamNames] = useState({ blue: 'Blue Team', red: 'Red Team' });
-  const [editingTeam, setEditingTeam] = useState(null); // 'blue', 'red', or null
-  const [editingName, setEditingName] = useState('');
   const [currentGame, setCurrentGame] = useState(1);
   const [teamScores, setTeamScores] = useState({ blue: 0, red: 0 });
   const [draftedHeroes, setDraftedHeroes] = useState(new Set()); // Heroes drafted in current game
@@ -95,27 +94,6 @@ const HotsDraftTool = () => {
   };
 
   const currentDraftStep = getCurrentDraftStep();
-
-  const startEditingTeam = (team) => {
-    setEditingTeam(team);
-    setEditingName(teamNames[team]);
-  };
-
-  const cancelEditingTeam = () => {
-    setEditingTeam(null);
-    setEditingName('');
-  };
-
-  const saveTeamName = () => {
-    if (editingName.trim()) {
-      setTeamNames(prev => ({
-        ...prev,
-        [editingTeam]: editingName.trim()
-      }));
-    }
-    setEditingTeam(null);
-    setEditingName('');
-  };
 
   const resetSeries = () => {
     setCurrentGame(1);
@@ -350,42 +328,17 @@ const HotsDraftTool = () => {
         {/* Series Status */}
         <div className="grid grid-cols-3 gap-4 mb-6">
           {/* Blue Team Score */}
-          <div className="bg-blue-900/50 p-4 rounded-lg text-center">
-            <div className="text-blue-400 font-semibold mb-2 flex items-center justify-center gap-2">
-              {editingTeam === 'blue' ? (
-                <div className="flex items-center gap-2">
-                  <input
-                    type="text"
-                    value={editingName}
-                    onChange={(e) => setEditingName(e.target.value)}
-                    className="bg-blue-800/50 text-blue-200 px-2 py-1 rounded text-sm w-24 text-center"
-                    autoFocus
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') saveTeamName();
-                      if (e.key === 'Escape') cancelEditingTeam();
-                    }}
-                  />
-                  <button onClick={saveTeamName} className="text-green-400 hover:text-green-300">
-                    <Check size={14} />
-                  </button>
-                  <button onClick={cancelEditingTeam} className="text-red-400 hover:text-red-300">
-                    <X size={14} />
-                  </button>
-                </div>
-              ) : (
-                <div className="flex items-center gap-2">
-                  <span>{teamNames.blue}</span>
-                  <button 
-                    onClick={() => startEditingTeam('blue')}
-                    className="text-blue-300 hover:text-blue-200 opacity-70 hover:opacity-100"
-                  >
-                    <Edit2 size={14} />
-                  </button>
-                </div>
-              )}
-            </div>
-            <div className="text-3xl font-bold">{teamScores.blue}</div>
-          </div>
+          <TeamScore
+            team="blue"
+            teamName={teamNames.blue}
+            score={teamScores.blue}
+            onTeamNameChange={(team, newName) => {
+              setTeamNames(prev => ({
+                ...prev,
+                [team]: newName
+              }));
+            }}
+          />
 
           {/* Game Status */}
           <div className="bg-slate-800 p-4 rounded-lg text-center">
@@ -435,42 +388,17 @@ const HotsDraftTool = () => {
           </div>
 
           {/* Red Team Score */}
-          <div className="bg-red-900/50 p-4 rounded-lg text-center">
-            <div className="text-red-400 font-semibold mb-2 flex items-center justify-center gap-2">
-              {editingTeam === 'red' ? (
-                <div className="flex items-center gap-2">
-                  <input
-                    type="text"
-                    value={editingName}
-                    onChange={(e) => setEditingName(e.target.value)}
-                    className="bg-red-800/50 text-red-200 px-2 py-1 rounded text-sm w-24 text-center"
-                    autoFocus
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') saveTeamName();
-                      if (e.key === 'Escape') cancelEditingTeam();
-                    }}
-                  />
-                  <button onClick={saveTeamName} className="text-green-400 hover:text-green-300">
-                    <Check size={14} />
-                  </button>
-                  <button onClick={cancelEditingTeam} className="text-red-400 hover:text-red-300">
-                    <X size={14} />
-                  </button>
-                </div>
-              ) : (
-                <div className="flex items-center gap-2">
-                  <span>{teamNames.red}</span>
-                  <button 
-                    onClick={() => startEditingTeam('red')}
-                    className="text-red-300 hover:text-red-200 opacity-70 hover:opacity-100"
-                  >
-                    <Edit2 size={14} />
-                  </button>
-                </div>
-              )}
-            </div>
-            <div className="text-3xl font-bold">{teamScores.red}</div>
-          </div>
+          <TeamScore
+            team="red"
+            teamName={teamNames.red}
+            score={teamScores.red}
+            onTeamNameChange={(team, newName) => {
+              setTeamNames(prev => ({
+                ...prev,
+                [team]: newName
+              }));
+            }}
+          />
         </div>
 
         {/* Pre-banned Heroes Display */}
