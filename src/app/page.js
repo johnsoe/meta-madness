@@ -5,6 +5,7 @@ import Legend from './legend';
 import GameHistory from './game-history';
 import HeroGrid from './hero-grid';
 import TeamScore from './team-score';
+import preBanService from './services/preBanService';
 
 const HotsDraftTool = () => {
   // Sample hero data - in a real app, this would be comprehensive
@@ -41,9 +42,6 @@ const HotsDraftTool = () => {
 
   const [seriesFormat, setSeriesFormat] = useState(3); // 3 or 5
   const [firstPickTeam, setFirstPickTeam] = useState('blue'); // Which team picks first
-  const [preBanEnabled, setPreBanEnabled] = useState(false); // Whether pre-banning is enabled
-  const [preBannedHeroes, setPreBannedHeroes] = useState(new Set());
-  const [preBanPhase, setPreBanPhase] = useState(false); // Are we in pre-ban phase?
   const [teamNames, setTeamNames] = useState({ blue: 'Blue Team', red: 'Red Team' });
   const [currentGame, setCurrentGame] = useState(1);
   const [teamScores, setTeamScores] = useState({ blue: 0, red: 0 });
@@ -58,7 +56,11 @@ const HotsDraftTool = () => {
   const [selectedMap, setSelectedMap] = useState(''); // Selected map for current game
   const [gameMapHistory, setGameMapHistory] = useState([]); // Track maps used in each game
 
-  const availableHeroes = allHeroes.filter(hero => !seriesDraftedHeroes.has(hero) && !preBannedHeroes.has(hero) && !bannedHeroes.has(hero));
+  const availableHeroes = allHeroes.filter(hero => 
+    !seriesDraftedHeroes.has(hero) && 
+    !preBanService.isPreBanned(hero) && 
+    !bannedHeroes.has(hero)
+  );
   const maxGames = Math.ceil(seriesFormat / 2);
 
   // Draft order: Blue(ban) -> Red(ban) -> Blue(ban) -> Red(ban) -> Blue(pick) -> Red(pick 2) -> Blue(pick 2) -> Red(ban) -> Blue(ban) -> Red(pick 2) -> Blue(pick 2) -> Red(pick)
@@ -101,62 +103,21 @@ const HotsDraftTool = () => {
     setDraftedHeroes(new Set());
     setSeriesDraftedHeroes(new Set());
     setBannedHeroes(new Set());
-    setPreBannedHeroes(new Set());
-    setPreBanPhase(preBanEnabled);
     setCurrentDraft([]);
     setGameHistory([]);
     setGameMapHistory([]);
     setSelectedMap('');
     setCurrentStep(1);
     setCurrentTeam(adjustedDraftOrder[0]?.team || 'blue');
-    setGamePhase(preBanEnabled ? 'pre-ban' : 'drafting');
-  };
-
-  const startDraftPhase = () => {
-    setPreBanPhase(false);
     setGamePhase('drafting');
   };
 
-  const togglePreBan = () => {
-    const newPreBanEnabled = !preBanEnabled;
-    setPreBanEnabled(newPreBanEnabled);
-    
-    if (newPreBanEnabled) {
-      // Enable pre-banning
-      setPreBanPhase(true);
-      setGamePhase('pre-ban');
-      setCurrentDraft([]); // Clear any existing draft
-    } else {
-      // Disable pre-banning
-      setPreBanPhase(false);
-      setPreBannedHeroes(new Set()); // Clear all pre-bans
-      setCurrentDraft([]); // Clear current draft
-      setGamePhase('drafting'); // Go back to drafting
-    }
-  };
-
-  const selectPreBan = (hero) => {
-    if (preBannedHeroes.has(hero) || draftedHeroes.has(hero)) return;
-    
-    const newPreBanned = new Set([...preBannedHeroes, hero]);
-    setPreBannedHeroes(newPreBanned);
-    
-    // No automatic transition - users can ban as many heroes as they want
-  };
-
-  const removePreBan = (hero) => {
-    const newPreBanned = new Set([...preBannedHeroes]);
-    newPreBanned.delete(hero);
-    setPreBannedHeroes(newPreBanned);
+  const startDraftPhase = () => {
+    setGamePhase('drafting');
   };
 
   const selectHero = (hero) => {
-    if (gamePhase === 'pre-ban') {
-      selectPreBan(hero);
-      return;
-    }
-    
-    if (draftedHeroes.has(hero) || preBannedHeroes.has(hero) || bannedHeroes.has(hero) || gamePhase !== 'drafting') return;
+    if (draftedHeroes.has(hero) || preBanService.isPreBanned(hero) || bannedHeroes.has(hero) || gamePhase !== 'drafting') return;
 
     const currentAction = currentDraftStep.action;
     
@@ -222,7 +183,7 @@ const HotsDraftTool = () => {
     } else {
       setCurrentGame(currentGame + 1);
       setCurrentDraft([]);
-      setDraftedHeroes(new Set()); // Clear current game draft
+      setDraftedHeroes(new Set());
       setBannedHeroes(new Set());
       setSelectedMap('');
       setCurrentStep(1);
@@ -279,32 +240,9 @@ const HotsDraftTool = () => {
           </div>
           <div className="flex items-center gap-2">
             <span className="text-slate-300">Pre-bans:</span>
-            {/* Show pre-ban button only before draft begins or during pre-ban phase */}
-            {gamePhase === 'pre-ban' ? (
-              <button
-                onClick={togglePreBan}
-                className="flex items-center gap-2 px-4 py-2 rounded transition-colors bg-green-600 hover:bg-green-700 text-white"
-                disabled={currentGame > 1}
-              >
-                Disable Pre-bans
-              </button>
-            ) : gamePhase === 'drafting' && currentStep === 1 && !preBanEnabled ? (
-              <button
-                onClick={togglePreBan}
-                className="flex items-center gap-2 px-4 py-2 rounded transition-colors bg-red-600 hover:bg-red-700 text-white"
-                disabled={currentGame > 1}
-              >
-                Enable Pre-bans
-              </button>
-            ) : gamePhase === 'drafting' && currentStep === 1 && preBanEnabled ? (
-              <span className="text-slate-400 text-sm px-4 py-2">
-                Pre-bans enabled
-              </span>
-            ) : (
-              <span className="text-slate-400 text-sm px-4 py-2">
-                {preBanEnabled ? 'Pre-bans enabled' : 'Pre-bans disabled'}
-              </span>
-            )}
+            <span className="text-slate-400 text-sm px-4 py-2">
+              {preBanService.getPreBanCount()} heroes pre-banned
+            </span>
           </div>
           <div className="flex items-center gap-2">
             <span className="text-slate-300">First Pick:</span>
@@ -365,37 +303,24 @@ const HotsDraftTool = () => {
                   {teamScores.blue > teamScores.red ? teamNames.blue : teamNames.red} Wins!
                 </div>
               </div>
-            ) : gamePhase === 'pre-ban' ? (
-              <div>
-                <div className="text-orange-400 font-semibold mb-2">Pre-Ban Phase</div>
-                <div className="text-sm text-slate-300 mb-3">
-                  Select heroes to pre-ban (no limit)
-                </div>
-                <button
-                  onClick={startDraftPhase}
-                  className="px-4 py-2 bg-green-600 hover:bg-green-700 rounded font-semibold transition-colors"
-                >
-                  Start Draft
-                </button>
-              </div>
-            ) : (
+            ) : gamePhase === 'drafting' ? (
               <div>
                 <div className="text-slate-300 font-semibold mb-2">
                   Game {currentGame}
                   {selectedMap && <div className="text-sm text-purple-400 font-normal">Map: {selectedMap}</div>}
                 </div>
-                {gamePhase === 'drafting' ? (
-                  <div className="text-sm">
-                    <div className={`font-semibold ${currentDraftStep.team === 'blue' ? 'text-blue-400' : 'text-red-400'}`}>
-                      {teamNames[currentDraftStep.team]}
-                    </div>
-                    <div className="text-xs text-slate-400 capitalize">
-                      {currentDraftStep.action} ({currentStep}/14)
-                    </div>
+                <div className="text-sm">
+                  <div className={`font-semibold ${currentDraftStep.team === 'blue' ? 'text-blue-400' : 'text-red-400'}`}>
+                    {teamNames[currentDraftStep.team]}
                   </div>
-                ) : (
-                  <div className="text-yellow-400">Draft Complete</div>
-                )}
+                  <div className="text-xs text-slate-400 capitalize">
+                    {currentDraftStep.action} ({currentStep}/14)
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div>
+                <div className="text-yellow-400">Draft Complete</div>
               </div>
             )}
           </div>
@@ -415,16 +340,13 @@ const HotsDraftTool = () => {
         </div>
 
         {/* Pre-banned Heroes Display */}
-        {preBannedHeroes.size > 0 && (
+        {preBanService.getPreBanCount() > 0 && (
           <div className="mb-6 p-4 bg-slate-800 rounded-lg">
             <h3 className="text-lg font-semibold mb-3 text-orange-400">Pre-banned Heroes</h3>
             <div className="flex flex-wrap gap-2">
-              {Array.from(preBannedHeroes).map((hero) => (
-                <span key={hero} className="text-sm bg-orange-900/40 text-orange-200 px-2 py-1 rounded flex items-center gap-1">
+              {Array.from(preBanService.getPreBannedHeroes()).map((hero) => (
+                <span key={hero} className="text-sm bg-orange-900/40 text-orange-200 px-2 py-1 rounded">
                   {hero}
-                  <button onClick={() => removePreBan(hero)} className="text-orange-300 hover:text-orange-200 text-xs">
-                    <X size={12} />
-                  </button>
                 </span>
               ))}
             </div>
@@ -577,11 +499,10 @@ const HotsDraftTool = () => {
           availableHeroes={availableHeroes}
           draftedHeroes={seriesDraftedHeroes}
           bannedHeroes={bannedHeroes}
-          preBannedHeroes={preBannedHeroes}
+          preBannedHeroes={preBanService.getPreBannedHeroes()}
           gamePhase={gamePhase}
           currentAction={currentDraftStep.action}
           onSelectHero={selectHero}
-          onRemovePreBan={removePreBan}
         />
 
         {/* Legend */}

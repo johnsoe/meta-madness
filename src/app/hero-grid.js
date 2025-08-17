@@ -19,11 +19,8 @@ const HeroGrid = ({
   );
 
   const handleHeroClick = (hero) => {
-    if (gamePhase === 'pre-ban' && preBannedHeroes.has(hero)) {
-      onRemovePreBan(hero);
-    } else {
-      onSelectHero(hero);
-    }
+    // Pre-ban phase is no longer supported, so just call onSelectHero
+    onSelectHero(hero);
   };
 
   const getHeroStatus = (hero) => {
@@ -35,21 +32,18 @@ const HeroGrid = ({
 
   const getHeroClassName = (hero) => {
     const status = getHeroStatus(hero);
-    const isDisabled = status === 'drafted' || (gamePhase !== 'drafting' && gamePhase !== 'pre-ban');
+    const isDisabled = status === 'drafted' || gamePhase !== 'drafting';
     
     let baseClasses = 'p-3 rounded-lg text-sm font-medium transition-all duration-200 min-h-[60px] flex items-center justify-center text-center';
     
     if (status === 'preBanned') {
-      if (gamePhase === 'pre-ban') {
-        return `${baseClasses} bg-orange-700 hover:bg-orange-600 text-orange-200 cursor-pointer border border-orange-500`;
-      } else {
-        return `${baseClasses} bg-orange-800 text-orange-300 cursor-not-allowed opacity-75 border border-orange-600`;
-      }
+      // Pre-banned heroes are always non-clickable now
+      return `${baseClasses} bg-orange-800 text-orange-300 cursor-not-allowed opacity-75 border border-orange-600`;
     } else if (status === 'banned') {
       return `${baseClasses} bg-red-800 text-red-300 cursor-not-allowed opacity-75 border border-red-600`;
     } else if (status === 'drafted') {
       return `${baseClasses} bg-slate-700 text-slate-500 cursor-not-allowed opacity-50`;
-    } else if (gamePhase === 'drafting' || gamePhase === 'pre-ban') {
+    } else if (gamePhase === 'drafting') {
       return `${baseClasses} bg-slate-600 hover:bg-slate-500 text-white cursor-pointer transform hover:scale-105`;
     } else {
       return `${baseClasses} bg-slate-600 text-slate-300 cursor-not-allowed`;
@@ -57,7 +51,6 @@ const HeroGrid = ({
   };
 
   const getActionText = () => {
-    if (gamePhase === 'pre-ban') return 'Select heroes to pre-ban';
     if (gamePhase === 'drafting') {
       return currentAction === 'ban' ? 'Select hero to ban' : 'Select hero to pick';
     }
@@ -106,7 +99,7 @@ const HeroGrid = ({
       <div className="grid grid-cols-4 md:grid-cols-6 lg:grid-cols-8 xl:grid-cols-10 gap-2">
         {filteredHeroes.map((hero) => {
           const status = getHeroStatus(hero);
-          const isDisabled = status === 'drafted' || (gamePhase !== 'drafting' && gamePhase !== 'pre-ban');
+          const isDisabled = status === 'drafted' || gamePhase !== 'drafting';
           
           return (
             <button
