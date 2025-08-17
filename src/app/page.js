@@ -239,12 +239,6 @@ const HotsDraftTool = () => {
             </select>
           </div>
           <div className="flex items-center gap-2">
-            <span className="text-slate-300">Pre-bans:</span>
-            <span className="text-slate-400 text-sm px-4 py-2">
-              {preBanService.getPreBanCount()} heroes pre-banned
-            </span>
-          </div>
-          <div className="flex items-center gap-2">
             <span className="text-slate-300">First Pick:</span>
             <select 
               value={firstPickTeam} 
