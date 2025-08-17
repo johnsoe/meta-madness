@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { RotateCcw, Trophy, Users, X } from 'lucide-react';
 import Legend from './components/legend';
+import DisabledHeroesDisplay from './components/disabledHeroesDisplay';
 import GameHistory from './components/gameHistory';
 import HeroGrid from './components/heroGrid';
 import TeamScore from './components/teamScore';
@@ -334,33 +335,10 @@ const HotsDraftTool = () => {
           />
         </div>
 
-        {/* Pre-banned Heroes Display */}
-        {preBanService.getPreBanCount() > 0 && (
-          <div className="mb-6 p-4 bg-slate-800 rounded-lg">
-            <h3 className="text-lg font-semibold mb-3 text-orange-400">Pre-banned Heroes</h3>
-            <div className="flex flex-wrap gap-2">
-              {Array.from(preBanService.getPreBannedHeroes()).map((hero) => (
-                <span key={hero} className="text-sm bg-orange-900/40 text-orange-200 px-2 py-1 rounded">
-                  {hero}
-                </span>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Series Drafted Heroes Display */}
-        {seriesDraftedHeroes.size > 0 && (
-          <div className="mb-6 p-4 bg-slate-800 rounded-lg">
-            <h3 className="text-lg font-semibold mb-3 text-slate-400">Series Drafted Heroes (Permanently Disabled)</h3>
-            <div className="flex flex-wrap gap-2">
-              {Array.from(seriesDraftedHeroes).map((hero) => (
-                <span key={hero} className="text-sm bg-slate-700 text-slate-300 px-2 py-1 rounded">
-                  {hero}
-                </span>
-              ))}
-            </div>
-          </div>
-        )}
+        <DisabledHeroesDisplay 
+          preBannedHeroes={preBanService.getPreBannedHeroes()}
+          seriesDraftedHeroes={seriesDraftedHeroes}
+        />
 
         {/* Current Draft Display */}
         {currentDraft.length > 0 && gamePhase === 'drafting' && (
