@@ -1,10 +1,10 @@
 "use client";
 import React, { useState, useEffect } from 'react';
 import { RotateCcw, Trophy, Users, X } from 'lucide-react';
-import Legend from './legend';
-import GameHistory from './game-history';
-import HeroGrid from './hero-grid';
-import TeamScore from './team-score';
+import Legend from './components/legend';
+import GameHistory from './components/gameHistory';
+import HeroGrid from './components/heroGrid';
+import TeamScore from './components/teamScore';
 import preBanService from './services/preBanService';
 
 const HotsDraftTool = () => {
