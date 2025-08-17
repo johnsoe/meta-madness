@@ -6,6 +6,7 @@ import GameHistory from './components/gameHistory';
 import HeroGrid from './components/heroGrid';
 import TeamScore from './components/teamScore';
 import preBanService from './services/preBanService';
+import GameCompleteButton from './components/gameCompleteButton';
 
 const HotsDraftTool = () => {
   // Sample hero data - in a real app, this would be comprehensive
@@ -463,20 +464,18 @@ const HotsDraftTool = () => {
             </div>
 
             <div className="flex justify-center gap-4">
-              <button 
-                onClick={() => completeGame('blue')}
-                className="px-6 py-3 bg-blue-600 hover:bg-blue-700 rounded font-semibold transition-colors"
+              <GameCompleteButton
+                team="blue"
+                teamName={teamNames.blue}
+                onTeamWin={completeGame}
                 disabled={!selectedMap}
-              >
-                {teamNames.blue} Won
-              </button>
-              <button 
-                onClick={() => completeGame('red')}
-                className="px-6 py-3 bg-red-600 hover:bg-red-700 rounded font-semibold transition-colors"
+              />
+              <GameCompleteButton
+                team="red" 
+                teamName={teamNames.red}
+                onTeamWin={completeGame}
                 disabled={!selectedMap}
-              >
-                {teamNames.red} Won
-              </button>
+              />
             </div>
             {!selectedMap && (
               <div className="text-yellow-400 text-sm mt-2">Please select a map before declaring the winner</div>
