@@ -279,19 +279,32 @@ const HotsDraftTool = () => {
           </div>
           <div className="flex items-center gap-2">
             <span className="text-slate-300">Pre-bans:</span>
-            <button
-              onClick={togglePreBan}
-              className={`
-                flex items-center gap-2 px-4 py-2 rounded transition-colors
-                ${preBanEnabled
-                  ? 'bg-green-600 hover:bg-green-700 text-white'
-                  : 'bg-red-600 hover:bg-red-700 text-white'
-                }
-              `}
-              disabled={currentGame > 1 || gamePhase !== 'drafting'}
-            >
-              {preBanEnabled ? 'Disable Pre-bans' : 'Enable Pre-bans'}
-            </button>
+            {/* Show pre-ban button only before draft begins or during pre-ban phase */}
+            {gamePhase === 'pre-ban' ? (
+              <button
+                onClick={togglePreBan}
+                className="flex items-center gap-2 px-4 py-2 rounded transition-colors bg-green-600 hover:bg-green-700 text-white"
+                disabled={currentGame > 1}
+              >
+                Disable Pre-bans
+              </button>
+            ) : gamePhase === 'drafting' && currentStep === 1 && !preBanEnabled ? (
+              <button
+                onClick={togglePreBan}
+                className="flex items-center gap-2 px-4 py-2 rounded transition-colors bg-red-600 hover:bg-red-700 text-white"
+                disabled={currentGame > 1}
+              >
+                Enable Pre-bans
+              </button>
+            ) : gamePhase === 'drafting' && currentStep === 1 && preBanEnabled ? (
+              <span className="text-slate-400 text-sm px-4 py-2">
+                Pre-bans enabled
+              </span>
+            ) : (
+              <span className="text-slate-400 text-sm px-4 py-2">
+                {preBanEnabled ? 'Pre-bans enabled' : 'Pre-bans disabled'}
+              </span>
+            )}
           </div>
           <div className="flex items-center gap-2">
             <span className="text-slate-300">First Pick:</span>
