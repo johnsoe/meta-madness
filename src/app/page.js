@@ -8,6 +8,8 @@ import HeroGrid from './components/heroGrid';
 import TeamScore from './components/teamScore';
 import preBanService from './services/preBanService';
 import GameCompleteButton from './components/gameCompleteButton';
+import choGallService from './services/choGallService';
+import draftService from './services/draftService';
 
 const HotsDraftTool = () => {
   // Sample hero data - in a real app, this would be comprehensive
@@ -65,28 +67,8 @@ const HotsDraftTool = () => {
   );
   const maxGames = Math.ceil(seriesFormat / 2);
 
-  // Draft order: Blue(ban) -> Red(ban) -> Blue(ban) -> Red(ban) -> Blue(pick) -> Red(pick 2) -> Blue(pick 2) -> Red(ban) -> Blue(ban) -> Red(pick 2) -> Blue(pick 2) -> Red(pick)
-  const draftOrder = [
-    { team: 'blue', action: 'ban' },   
-    { team: 'red', action: 'ban' },    
-    { team: 'blue', action: 'ban' },   
-    { team: 'red', action: 'ban' },    
-    { team: 'blue', action: 'pick' },  
-    { team: 'red', action: 'pick' },   
-    { team: 'red', action: 'pick' },   
-    { team: 'blue', action: 'pick' },
-    { team: 'blue', action: 'pick' },  
-    { team: 'red', action: 'ban' },    
-    { team: 'blue', action: 'ban' },   
-    { team: 'red', action: 'pick' }, 
-    { team: 'red', action: 'pick' }, 
-    { team: 'blue', action: 'pick' },
-    { team: 'blue', action: 'pick' },
-    { team: 'red', action: 'pick' },
-  ];
-
   // Adjust draft order based on first pick team
-  const adjustedDraftOrder = draftOrder.map(step => {
+  const adjustedDraftOrder = draftService.draftOrder.map(step => {
     if (firstPickTeam === 'red') {
       return { ...step, team: step.team === 'blue' ? 'red' : 'blue' };
     }
@@ -96,8 +78,6 @@ const HotsDraftTool = () => {
   const getCurrentDraftStep = () => {
     return adjustedDraftOrder[currentStep - 1] || { team: 'blue', action: 'pick' };
   };
-
-  const currentDraftStep = getCurrentDraftStep();
 
   const resetSeries = () => {
     setCurrentGame(1);
@@ -120,8 +100,7 @@ const HotsDraftTool = () => {
 
   const selectHero = (hero) => {
     if (draftedHeroes.has(hero) || preBanService.isPreBanned(hero) || bannedHeroes.has(hero) || gamePhase !== 'drafting') return;
-
-    const currentAction = currentDraftStep.action;
+    const currentAction = getCurrentDraftStep().action;
     
     if (currentAction === 'ban') {
       // Ban the hero
@@ -130,36 +109,51 @@ const HotsDraftTool = () => {
       
       const newDraftEntry = { 
         hero, 
-        team: currentDraftStep.team, 
+        team: getCurrentDraftStep().team, 
         action: 'ban', 
         step: currentStep 
       };
       setCurrentDraft(prev => [...prev, newDraftEntry]);
+      advanceDraft(1)
     } else {
-      // Pick the hero
-      const newDrafted = new Set([...draftedHeroes, hero]);
-      setDraftedHeroes(newDrafted);
-      
-      // Also add to series-wide tracking
-      setSeriesDraftedHeroes(prev => new Set([...prev, hero]));
-      
-      const newDraftEntry = { 
-        hero, 
-        team: currentDraftStep.team, 
-        action: 'pick', 
-        step: currentStep 
-      };
-      setCurrentDraft(prev => [...prev, newDraftEntry]);
+      if (choGallService.isChoOrGall(hero)) {
+        pickHero(hero)
+        pickHero(choGallService.getOtherHead(hero))
+        advanceDraft(2)
+      } else {
+        pickHero(hero)
+        advanceDraft(1)
+      }
     }
+    console.log(getCurrentDraftStep())
+  };
 
-    if (currentStep === draftOrder.length) {
+  const pickHero = (hero) => {
+    // Pick the hero
+    const newDrafted = new Set([...draftedHeroes, hero]);
+    setDraftedHeroes(newDrafted);
+    
+    // Also add to series-wide tracking
+    setSeriesDraftedHeroes(prev => new Set([...prev, hero]));
+    
+    const newDraftEntry = { 
+      hero, 
+      team: getCurrentDraftStep().team, 
+      action: 'pick', 
+      step: currentStep 
+    };
+    setCurrentDraft(prev => [...prev, newDraftEntry]);
+  }
+
+  const advanceDraft = (delta) => {
+    if (currentStep === draftService.draftOrder.length) {
       setGamePhase('game-complete');
     } else {
-      const nextStep = currentStep + 1;
+      const nextStep = currentStep + delta;
       setCurrentStep(nextStep);
       setCurrentTeam(adjustedDraftOrder[nextStep - 1]?.team || 'blue');
     }
-  };
+  }
 
   const completeGame = (winner) => {
     // Save the completed game to history
@@ -248,7 +242,7 @@ const HotsDraftTool = () => {
                 setFirstPickTeam(e.target.value);
                 // Update current team to match the first step of the draft order
                 const newFirstPickTeam = e.target.value;
-                const newDraftOrder = draftOrder.map(step => {
+                const newDraftOrder = draftService.draftOrder.map(step => {
                   if (newFirstPickTeam === 'red') {
                     return { ...step, team: step.team === 'blue' ? 'red' : 'blue' };
                   }
@@ -306,11 +300,11 @@ const HotsDraftTool = () => {
                   {selectedMap && <div className="text-sm text-purple-400 font-normal">Map: {selectedMap}</div>}
                 </div>
                 <div className="text-sm">
-                  <div className={`font-semibold ${currentDraftStep.team === 'blue' ? 'text-blue-400' : 'text-red-400'}`}>
-                    {teamNames[currentDraftStep.team]}
+                  <div className={`font-semibold ${getCurrentDraftStep().team === 'blue' ? 'text-blue-400' : 'text-red-400'}`}>
+                    {teamNames[getCurrentDraftStep().team]}
                   </div>
                   <div className="text-xs text-slate-400 capitalize">
-                    {currentDraftStep.action} ({currentStep}/14)
+                    {getCurrentDraftStep().action} ({currentStep}/14)
                   </div>
                 </div>
               </div>
@@ -472,8 +466,9 @@ const HotsDraftTool = () => {
           bannedHeroes={bannedHeroes}
           preBannedHeroes={preBanService.getPreBannedHeroes()}
           gamePhase={gamePhase}
-          currentAction={currentDraftStep.action}
+          currentAction={getCurrentDraftStep().action}
           onSelectHero={selectHero}
+          currentStep={currentStep}
         />
 
         {/* Legend */}

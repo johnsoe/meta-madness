@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import choGallService from '../services/choGallService';
 import { X } from 'lucide-react';
 
 const HeroGrid = ({ 
@@ -10,7 +11,7 @@ const HeroGrid = ({
   gamePhase, 
   currentAction,
   onSelectHero, 
-  onRemovePreBan 
+  currentStep,
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
 
@@ -27,21 +28,18 @@ const HeroGrid = ({
     if (draftedHeroes.has(hero)) return 'drafted';
     if (bannedHeroes.has(hero)) return 'banned';
     if (preBannedHeroes.has(hero)) return 'preBanned';
+    if (choGallService.isChoOrGall(hero) && !choGallService.isChoGallAvailable(bannedHeroes, draftedHeroes, currentStep) && currentAction === 'pick') return 'unavailable';
     return 'available';
   };
 
   const getHeroClassName = (hero) => {
     const status = getHeroStatus(hero);
-    const isDisabled = status === 'drafted' || gamePhase !== 'drafting';
-    
     let baseClasses = 'p-3 rounded-lg text-sm font-medium transition-all duration-200 min-h-[60px] flex items-center justify-center text-center';
-    
     if (status === 'preBanned') {
-      // Pre-banned heroes are always non-clickable now
       return `${baseClasses} bg-orange-800 text-orange-300 cursor-not-allowed opacity-75 border border-orange-600`;
     } else if (status === 'banned') {
       return `${baseClasses} bg-red-800 text-red-300 cursor-not-allowed opacity-75 border border-red-600`;
-    } else if (status === 'drafted') {
+    } else if (status === 'drafted' || status === 'unavailable') {
       return `${baseClasses} bg-slate-700 text-slate-500 cursor-not-allowed opacity-50`;
     } else if (gamePhase === 'drafting') {
       return `${baseClasses} bg-slate-600 hover:bg-slate-500 text-white cursor-pointer transform hover:scale-105`;
