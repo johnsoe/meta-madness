@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import Image from 'next/image';
 import choGallService from '../services/choGallService';
-import next from 'next';
 
 const HeroGrid = ({ 
   allHeroes, 
@@ -82,28 +81,34 @@ const HeroGrid = ({
     return '';
   };
 
+  const columns = 15; // Reduced to prevent overcrowding
+  const rows = Math.ceil(filteredHeroes.length / columns);
+  const hexWidth = 80;
+  const containerWidth = columns * hexWidth + (hexWidth / 2); // Account for offset rows
+  const containerHeight = rows * 69 + 92; // 75% of height + one full height
+
   // Calculate grid layout - hexagons need offset rows (pointy-top orientation)
   const getHexPosition = (index, columns) => {
     const row = Math.floor(index / columns);
     const col = index % columns;
-    const isEvenRow = row % 2 === 0;
+    const isOddRow = row % 2 === 1;
     
     // Hexagon dimensions (pointy-top orientation)
     const hexWidth = 80;
     const hexHeight = 92;
-    const horizontalSpacing = hexWidth * 0.87; // sqrt(3)/2 for proper hex spacing
-    const verticalSpacing = hexHeight * 0.75; // 3/4 overlap for hexagons
     
-    const x = col * horizontalSpacing + (isEvenRow ? 0 : horizontalSpacing / 2);
+    // For pointy-top hexagons:
+    // - Horizontal spacing should be the full width (no overlap)
+    // - Vertical spacing uses 3/4 of height (75%)
+    // - Odd rows are offset by half the horizontal spacing
+    const horizontalSpacing = hexWidth; // Full width spacing
+    const verticalSpacing = hexHeight * 0.75; // 3/4 of height
+    
+    const x = col * horizontalSpacing + (isOddRow ? horizontalSpacing / 2 : 0);
     const y = row * verticalSpacing;
     
     return { x, y };
   };
-
-  const columns = 12; // Adjust based on your preference
-  const rows = Math.ceil(filteredHeroes.length / columns);
-  const containerWidth = columns * 60 + 40; // Approximate width
-  const containerHeight = rows * 80; // Approximate height
 
   return (
     <div>
@@ -205,9 +210,9 @@ const HeroGrid = ({
                     <Image
                       src={getHeroImagePath(hero)}
                       alt={hero}
-                      width="80"
-                      height="80"
                       className="w-full h-full object-cover"
+                      width="82"
+                      height="90"
                       style={{
                         clipPath: 'polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)',
                       }}
