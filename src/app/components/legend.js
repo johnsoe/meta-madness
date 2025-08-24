@@ -18,7 +18,7 @@ const Legend = () => {
           <span>Banned Hero</span>
         </div>
         <div className="flex items-center gap-2">
-          <div className="w-4 h-4 bg-slate-700 opacity-50 rounded"></div>
+          <div className="w-4 h-4 bg-green-600 opacity-50 rounded"></div>
           <span>Drafted Hero (Permanently Disabled)</span>
         </div>
       </div>

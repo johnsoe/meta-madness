@@ -6,7 +6,7 @@ import { getHeroAlias } from '../data/heroAlias';
 const HeroGrid = ({ 
   allHeroes, 
   availableHeroes, 
-  draftedHeroes, 
+  seriesDraftedHeroes, 
   bannedHeroes,
   preBannedHeroes, 
   gamePhase, 
@@ -25,10 +25,10 @@ const HeroGrid = ({
   };
 
   const getHeroStatus = (hero) => {
-    if (draftedHeroes.has(hero)) return 'drafted';
+    if (seriesDraftedHeroes.has(hero)) return 'drafted';
     if (bannedHeroes.has(hero)) return 'banned';
     if (preBannedHeroes.has(hero)) return 'preBanned';
-    if (choGallService.isChoOrGall(hero) && !choGallService.isChoGallAvailable(bannedHeroes, draftedHeroes, currentStep) && currentAction === 'pick') return 'unavailable';
+    if (choGallService.isChoOrGall(hero) && !choGallService.isChoGallAvailable(bannedHeroes, seriesDraftedHeroes, currentStep) && currentAction === 'pick') return 'unavailable';
     return 'available';
   };
 
@@ -54,9 +54,10 @@ const HeroGrid = ({
       overlayColor = 'rgba(194, 65, 12, 0.8)'; // orange-700 with transparency
     } else if (status === 'banned') {
       overlayColor = 'rgba(185, 28, 28, 0.8)'; // red-700 with transparency
-    } else if (status === 'drafted' || status === 'unavailable') {
+    } else if (status === 'unavailable') {
       overlayColor = 'rgba(51, 65, 85, 0.8)'; // slate-700 with transparency
-      opacity = '0.5';
+    } else if (status === 'drafted') {
+      overlayColor = 'rgba(104, 159, 56, 0.8)';
     }
 
     return {
@@ -110,7 +111,7 @@ const HeroGrid = ({
         <div className="flex items-center gap-4">
           <span className="text-lg font-semibold">Hero Pool</span>
           <span className="text-slate-400">
-            Available: {availableHeroes.length} | Drafted: {draftedHeroes.size} | Banned: {bannedHeroes.size} | Pre-banned: {preBannedHeroes.size}
+            Available: {availableHeroes.length} | Drafted: {seriesDraftedHeroes.size} | Banned: {bannedHeroes.size} | Pre-banned: {preBannedHeroes.size}
           </span>
         </div>
         <div className="flex items-center gap-2">
@@ -250,6 +251,14 @@ const HeroGrid = ({
                       <div className="absolute inset-0 flex items-center justify-center">
                         <div className="w-8 h-8 bg-orange-600 rounded-full flex items-center justify-center">
                           <span className="text-white font-bold text-lg">!</span>
+                        </div>
+                      </div>
+                    )}
+
+                    {status === 'drafted' && (
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <div className="w-8 h-8 bg-green-600 rounded-full flex items-center justify-center">
+                          <span className="text-white font-bold text-lg">&#10003;</span>
                         </div>
                       </div>
                     )}

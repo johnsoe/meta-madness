@@ -462,7 +462,7 @@ const HotsDraftTool = () => {
         <HeroGrid 
           allHeroes={allHeroes}
           availableHeroes={availableHeroes}
-          draftedHeroes={seriesDraftedHeroes}
+          seriesDraftedHeroes={seriesDraftedHeroes}
           bannedHeroes={bannedHeroes}
           preBannedHeroes={preBanService.getPreBannedHeroes()}
           gamePhase={gamePhase}
