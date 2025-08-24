@@ -47,26 +47,19 @@ const HeroGrid = ({
     const isClickable = gamePhase === 'drafting' && status === 'available';
     
     let overlayColor = 'transparent';
-    let borderColor = '#475569'; // slate-600
     let opacity = '1';
     
     if (status === 'preBanned') {
       overlayColor = 'rgba(194, 65, 12, 0.8)'; // orange-700 with transparency
-      borderColor = '#ea580c'; // orange-600
     } else if (status === 'banned') {
       overlayColor = 'rgba(185, 28, 28, 0.8)'; // red-700 with transparency
-      borderColor = '#dc2626'; // red-600
     } else if (status === 'drafted' || status === 'unavailable') {
       overlayColor = 'rgba(51, 65, 85, 0.8)'; // slate-700 with transparency
-      borderColor = '#475569'; // slate-600
       opacity = '0.5';
-    } else if (isClickable) {
-      borderColor = '#10b981'; // emerald-500
     }
 
     return {
       overlayColor,
-      borderColor,
       opacity,
       cursor: isClickable ? 'pointer' : 'not-allowed',
       transform: isClickable ? 'scale(1)' : 'scale(1)',
@@ -155,14 +148,14 @@ const HeroGrid = ({
           style={{ 
             width: `${containerWidth}px`, 
             height: `${containerHeight}px`,
-            minWidth: '800px' 
+            minWidth: '800px',
           }}
         >
           {filteredHeroes.map((hero, index) => {
             const position = getHexPosition(index, columns);
             const styles = getHexagonStyles(hero);
             const status = getHeroStatus(hero);
-            const isDisabled = status === 'drafted' || gamePhase !== 'drafting';
+            const isDisabled = status === 'drafted' || gamePhase !== 'drafting' || status === 'banned' || status === 'preBanned';
             
             return (
               <div
@@ -187,14 +180,12 @@ const HeroGrid = ({
                   onMouseEnter={(e) => {
                     if (!isDisabled) {
                       e.currentTarget.style.transform = 'scale(1.1)';
-                      e.currentTarget.style.zIndex = '10';
                     }
+                    e.currentTarget.style.zIndex = '10';
                   }}
                   onMouseLeave={(e) => {
-                    if (!isDisabled) {
-                      e.currentTarget.style.transform = 'scale(1)';
-                      e.currentTarget.style.zIndex = '1';
-                    }
+                    e.currentTarget.style.transform = 'scale(1)';
+                    e.currentTarget.style.zIndex = '1';
                   }}
                 >
                   {/* Hexagon Container */}
@@ -202,7 +193,7 @@ const HeroGrid = ({
                     className="w-full h-full relative"
                     style={{
                       clipPath: 'polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)',
-                      border: `2px solid ${styles.borderColor}`,
+                      border: 'none',
                       backgroundColor: '#1e293b', // slate-800
                     }}
                   >
