@@ -16,14 +16,14 @@ const HotsDraftTool = () => {
   const allHeroes = [
     // Complete list of all 90 Heroes of the Storm characters
     'Abathur', 'Alarak', 'Alexstrasza', 'Ana', 'Anduin', 'Anub\'arak', 'Artanis', 'Arthas', 'Auriel', 'Azmodan',
-    'Blaze', 'Brightwing', 'Cassia', 'Chen', 'Cho', 'Chromie', 'D.Va', 'Deckard', 'Deathwing', 'Dehaka',
-    'Diablo', 'E.T.C.', 'Falstad', 'Fenix', 'Gall', 'Garrosh', 'Gazlowe', 'Genji', 'Greymane', 'Gul\'dan',
+    'Blaze', 'Brightwing', 'Cassia', 'Chen', 'Cho', 'Chromie', 'Deckard', 'Deathwing', 'Dehaka',
+    'Diablo', 'D.Va', 'E.T.C.', 'Falstad', 'Fenix', 'Gall', 'Garrosh', 'Gazlowe', 'Genji', 'Greymane', 'Gul\'dan',
     'Hanzo', 'Hogger', 'Illidan', 'Imperius', 'Jaina', 'Johanna', 'Junkrat', 'Kael\'thas', 'Kel\'Thuzad', 'Kerrigan',
     'Kharazim', 'Leoric', 'Li Li', 'Li-Ming', 'Lt. Morales', 'Lucio', 'Lunara', 'Maiev', 'Mal\'Ganis', 'Malfurion',
     'Malthael', 'Medivh', 'Mei', 'Mephisto', 'Muradin', 'Murky', 'Nazeebo', 'Nova', 'Orphea', 'Probius',
     'Qhira', 'Ragnaros', 'Raynor', 'Rehgar', 'Rexxar', 'Samuro', 'Sgt. Hammer', 'Sonya', 'Stitches', 'Stukov',
     'Sylvanas', 'Tassadar', 'The Butcher', 'The Lost Vikings', 'Thrall', 'Tracer', 'Tyrael', 'Tyrande', 'Tychus', 'Uther',
-    'Valeera', 'Valla', 'Varian', 'Whitemane', 'Xul', 'Yrel', 'Zagara', 'Zeratul', 'Zuljin', 'Vikhr'
+    'Valeera', 'Valla', 'Varian', 'Whitemane', 'Xul', 'Yrel', 'Zagara', 'Zarya', 'Zeratul', 'Zuljin',
   ].sort();
 
   const allMaps = [

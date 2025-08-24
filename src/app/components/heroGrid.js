@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import Image from 'next/image';
 import choGallService from '../services/choGallService';
+import { getHeroAlias } from '../data/heroAlias';
 
 const HeroGrid = ({ 
   allHeroes, 
@@ -33,12 +34,12 @@ const HeroGrid = ({
 
   const getHeroImagePath = (heroName) => {
     // Convert hero name to filename format (lowercase, replace spaces and special chars)
-    const filename = heroName
+    const filename = getHeroAlias(heroName)
       .toLowerCase()
       .replace(/\s+/g, '_')
       .replace(/[.']/g, '')
-      .replace(/ü/g, 'u')
-      .replace(/é/g, 'e');
+      //.replace(/ü/g, 'u')
+      //.replace(/é/g, 'e');
     return `/assets/portrait_${filename}.png`;
   };
 
