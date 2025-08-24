@@ -37,9 +37,7 @@ const HeroGrid = ({
     const filename = getHeroAlias(heroName)
       .toLowerCase()
       .replace(/\s+/g, '_')
-      .replace(/[.']/g, '')
-      //.replace(/ü/g, 'u')
-      //.replace(/é/g, 'e');
+      .replace(/[.']/g, '');
     return `/assets/portrait_${filename}.png`;
   };
 
@@ -64,7 +62,6 @@ const HeroGrid = ({
       overlayColor,
       opacity,
       cursor: isClickable ? 'pointer' : 'not-allowed',
-      transform: isClickable ? 'scale(1)' : 'scale(1)',
       transition: 'all 0.2s ease-in-out'
     };
   };
@@ -79,25 +76,22 @@ const HeroGrid = ({
   const columns = 15; // Reduced to prevent overcrowding
   const rows = Math.ceil(filteredHeroes.length / columns);
   const hexWidth = 80;
+  const hexHeight = 92;
   const containerWidth = columns * hexWidth + (hexWidth / 2); // Account for offset rows
-  const containerHeight = rows * 69 + 92; // 75% of height + one full height
+  const containerHeight = rows * 69 + hexHeight; // 75% of height + one full height
+  const clipPath = 'polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)';
 
   // Calculate grid layout - hexagons need offset rows (pointy-top orientation)
   const getHexPosition = (index, columns) => {
     const row = Math.floor(index / columns);
     const col = index % columns;
     const isOddRow = row % 2 === 1;
-    
-    // Hexagon dimensions (pointy-top orientation)
-    const hexWidth = 80;
-    const hexHeight = 92;
-    
     // For pointy-top hexagons:
     // - Horizontal spacing should be the full width (no overlap)
     // - Vertical spacing uses 3/4 of height (75%)
     // - Odd rows are offset by half the horizontal spacing
-    const horizontalSpacing = hexWidth; // Full width spacing
-    const verticalSpacing = hexHeight * 0.75; // 3/4 of height
+    const horizontalSpacing = hexWidth;
+    const verticalSpacing = hexHeight * 0.75;
     
     const x = col * horizontalSpacing + (isOddRow ? horizontalSpacing / 2 : 0);
     const y = row * verticalSpacing;
@@ -166,8 +160,8 @@ const HeroGrid = ({
                 style={{
                   left: `${position.x}px`,
                   top: `${position.y}px`,
-                  width: '80px',
-                  height: '92px',
+                  width: `${hexWidth}px`,
+                  height: `${hexHeight}px`,
                 }}
               >
                 <div
@@ -194,7 +188,7 @@ const HeroGrid = ({
                   <div 
                     className="w-full h-full relative"
                     style={{
-                      clipPath: 'polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)',
+                      clipPath: clipPath,
                       border: 'none',
                       backgroundColor: '#1e293b', // slate-800
                     }}
@@ -204,10 +198,10 @@ const HeroGrid = ({
                       src={getHeroImagePath(hero)}
                       alt={hero}
                       className="w-full h-full object-cover"
-                      width="82"
-                      height="90"
+                      width={hexWidth}
+                      height={hexHeight}
                       style={{
-                        clipPath: 'polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)',
+                        clipPath: clipPath,
                       }}
                       onError={(e) => {
                         // Fallback to text if image fails to load
@@ -221,7 +215,7 @@ const HeroGrid = ({
                       className="absolute inset-0 flex items-center justify-center text-xs font-medium text-white text-center px-1 leading-tight"
                       style={{ 
                         display: 'none',
-                        clipPath: 'polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)',
+                        clipPath: clipPath,
                       }}
                     >
                       {hero}
@@ -233,7 +227,7 @@ const HeroGrid = ({
                         className="absolute inset-0"
                         style={{
                           backgroundColor: styles.overlayColor,
-                          clipPath: 'polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)',
+                          clipPath: clipPath,
                         }}
                       />
                     )}
