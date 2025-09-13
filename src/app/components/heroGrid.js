@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import Image from 'next/image';
 import choGallService from '../services/choGallService';
-import { getHeroAlias } from '../data/heroAlias';
+import { getHeroAlias, getHeroByName, getHeroFranchise } from '../data/heroData';
 
 const HeroGrid = ({ 
   allHeroes, 
@@ -33,12 +33,19 @@ const HeroGrid = ({
   };
 
   const getHeroImagePath = (heroName) => {
-    // Convert hero name to filename format (lowercase, replace spaces and special chars)
-    const filename = getHeroAlias(heroName)
-      .toLowerCase()
-      .replace(/\s+/g, '_')
-      .replace(/[.']/g, '');
+    const filename = getHeroByName(heroName).getFilename();
     return `/assets/portrait_${filename}.png`;
+  };
+
+  const getFranchiseColor = (franchise) => {
+    const colors = {
+      'Warcraft': 'text-blue-400',
+      'StarCraft': 'text-green-400', 
+      'Diablo': 'text-red-400',
+      'Overwatch': 'text-orange-400',
+      'Nexus': 'text-purple-400'
+    };
+    return colors[franchise] || 'text-gray-400';
   };
 
   const getHexagonStyles = (hero) => {
@@ -259,8 +266,11 @@ const HeroGrid = ({
                   </div>
 
                   {/* Hero Name Tooltip */}
-                  <div className="absolute -bottom-6 left-1/2 transform -translate-x-1/2 bg-slate-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap z-20 pointer-events-none">
-                    {hero}
+                  <div className="absolute -bottom-8 left-1/2 transform -translate-x-1/2 bg-slate-800 text-white text-xs px-3 py-2 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap z-20 pointer-events-none">
+                    <div className="font-medium">{hero}</div>
+                    <div className={`text-xs ${getFranchiseColor(getHeroFranchise(hero) || 'Unknown')}`}>
+                      {getHeroFranchise(hero) || 'Unknown'}
+                    </div>
                   </div>
                 </div>
               </div>
