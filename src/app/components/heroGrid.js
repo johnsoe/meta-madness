@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import Image from 'next/image';
 import choGallService from '../services/choGallService';
-import { getHeroAlias, getHeroByName, getHeroFranchise, getHeroRole } from '../data/heroData';
+import { getHeroAlias, getHeroByName, getHeroFranchise, getHeroRole, getAllFranchises } from '../data/heroData';
 
 const HeroGrid = ({ 
   allHeroes, 
@@ -15,13 +15,31 @@ const HeroGrid = ({
   currentStep,
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
+  const [selectedFranchises, setSelectedFranchises] = useState(new Set());
 
-  const filteredHeroes = allHeroes.filter(hero => 
-    hero.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredHeroes = allHeroes.filter(hero => {
+    const matchesSearch = hero.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesFranchise = selectedFranchises.size === 0 || selectedFranchises.has(getHeroFranchise(hero));
+    return matchesSearch && matchesFranchise;
+  });
 
   const handleHeroClick = (hero) => {
     onSelectHero(hero);
+  };
+
+  const handleFranchiseToggle = (franchise) => {
+    const newSelectedFranchises = new Set(selectedFranchises);
+    if (newSelectedFranchises.has(franchise)) {
+      newSelectedFranchises.delete(franchise);
+    } else {
+      newSelectedFranchises.add(franchise);
+    }
+    setSelectedFranchises(newSelectedFranchises);
+  };
+
+  const clearAllFilters = () => {
+    setSearchTerm('');
+    setSelectedFranchises(new Set());
   };
 
   const getHeroStatus = (hero) => {
@@ -127,7 +145,7 @@ const HeroGrid = ({
             Available: {availableHeroes.length} | Drafted: {seriesDraftedHeroes.size} | Banned: {bannedHeroes.size} | Pre-banned: {preBannedHeroes.size}
           </span>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           <span className="text-slate-300">Search:</span>
           <input
             type="text"
@@ -136,12 +154,32 @@ const HeroGrid = ({
             placeholder="Filter heroes..."
             className="bg-slate-700 text-white px-3 py-1 rounded border border-slate-600 focus:border-slate-500 focus:outline-none w-48"
           />
-          {searchTerm && (
+          
+          {/* Franchise Filter Buttons */}
+          <div className="flex items-center gap-1">
+            <span className="text-slate-300 text-sm">Franchise:</span>
+            {getAllFranchises().map(franchise => (
+              <button
+                key={franchise}
+                onClick={() => handleFranchiseToggle(franchise)}
+                className={`px-2 py-1 text-xs rounded transition-colors ${
+                  selectedFranchises.has(franchise)
+                    ? `${getFranchiseColor(franchise)} bg-slate-600 border border-current`
+                    : 'text-slate-400 hover:text-white hover:bg-slate-600'
+                }`}
+                title={`Filter by ${franchise}`}
+              >
+                {franchise}
+              </button>
+            ))}
+          </div>
+
+          {(searchTerm || selectedFranchises.size > 0) && (
             <button
-              onClick={() => setSearchTerm('')}
+              onClick={clearAllFilters}
               className="text-slate-400 hover:text-white text-sm px-2 py-1 hover:bg-slate-600 rounded transition-colors"
             >
-              Clear
+              Clear All
             </button>
           )}
         </div>
