@@ -2,10 +2,11 @@
 // Comprehensive hero data structure with name, alias, and franchise information
 
 class HeroData {
-  constructor(name, alias, franchise) {
+  constructor(name, alias, franchise, role) {
     this.name = name;
     this.alias = alias;
     this.franchise = franchise;
+    this.role = role;
   }
 
   // Get the display name (alias if available, otherwise name)
@@ -28,109 +29,110 @@ class HeroData {
 
   // String representation
   toString() {
-    return `${this.name} (${this.alias}) - ${this.franchise}`;
+    return `${this.name} (${this.alias}) - ${this.franchise} - ${this.role}`;
   }
 }
 
 // Complete hero database with all Heroes of the Storm characters
 const heroDatabase = [
   // Warcraft Universe
-  new HeroData("Abathur", "abathur", "Warcraft"),
-  new HeroData("Alarak", "alarak", "StarCraft"),
-  new HeroData("Alexstrasza", "alexstrasza", "Warcraft"),
-  new HeroData("Ana", "ana", "Overwatch"),
-  new HeroData("Anduin", "anduin", "Warcraft"),
-  new HeroData("Anub\'arak", "anubarak", "Warcraft"),
-  new HeroData("Artanis", "artanis", "StarCraft"),
-  new HeroData("Arthas", "arthas", "Warcraft"),
-  new HeroData("Auriel", "auriel", "Diablo"),
-  new HeroData("Azmodan", "azmodan", "Diablo"),
-  new HeroData("Blaze", "firebat", "StarCraft"),
-  new HeroData("Brightwing", "faeriedragon", "Warcraft"),
-  new HeroData("The Butcher", "butcher", "Diablo"),
-  new HeroData("Cassia", "amazon", "Diablo"),
-  new HeroData("Chen", "chen", "Warcraft"),
-  new HeroData("Cho", "cho", "Warcraft"),
-  new HeroData("Chromie", "chromie", "Warcraft"),
-  new HeroData("Deathwing", "deathwing", "Warcraft"),
-  new HeroData("Deckard", "deckard", "Diablo"),
-  new HeroData("Dehaka", "dehaka", "StarCraft"),
-  new HeroData("Diablo", "diablo", "Diablo"),
-  new HeroData("D.Va", "dva", "Overwatch"),
-  new HeroData("E.T.C.", "l90etc", "Warcraft"),
-  new HeroData("Falstad", "falstad", "Warcraft"),
-  new HeroData("Fenix", "fenix", "StarCraft"),
-  new HeroData("Gall", "gall", "Warcraft"),
-  new HeroData("Garrosh", "garrosh", "Warcraft"),
-  new HeroData("Gazlowe", "gazlowe", "Warcraft"),
-  new HeroData("Genji", "genji", "Overwatch"),
-  new HeroData("Greymane", "genngreymane", "Warcraft"),
-  new HeroData("Gul\'dan", "guldan", "Warcraft"),
-  new HeroData("Hanzo", "hanzo", "Overwatch"),
-  new HeroData("Hogger", "hogger", "Warcraft"),
-  new HeroData("Illidan", "illidan", "Warcraft"),
-  new HeroData("Imperius", "imperius", "Diablo"),
-  new HeroData("Jaina", "jaina", "Warcraft"),
-  new HeroData("Johanna", "johanna", "Diablo"),
-  new HeroData("Junkrat", "junkrat", "Overwatch"),
-  new HeroData("Kael\'thas", "kaelthas", "Warcraft"),
-  new HeroData("Kel\'Thuzad", "kelthuzad", "Warcraft"),
-  new HeroData("Kerrigan", "kerrigan", "StarCraft"),
-  new HeroData("Kharazim", "monk", "Diablo"),
-  new HeroData("Leoric", "leoric", "Diablo"),
-  new HeroData("Li Li", "lili", "Warcraft"),
-  new HeroData("Li-Ming", "wizard", "Diablo"),
-  new HeroData("The Lost Vikings", "lostvikings", "Nexus"),
-  new HeroData("Lt. Morales", "medic", "StarCraft"),
-  new HeroData("Lucio", "lucio", "Overwatch"),
-  new HeroData("Lunara", "lunara", "Warcraft"),
-  new HeroData("Maiev", "maiev", "Warcraft"),
-  new HeroData("Malfurion", "malfurion", "Warcraft"),
-  new HeroData("Mal\'Ganis", "malganis", "Warcraft"),
-  new HeroData("Malthael", "malthael", "Diablo"),
-  new HeroData("Mei", "meiow", "Overwatch"),
-  new HeroData("Medivh", "medivh", "Warcraft"),
-  new HeroData("Mephisto", "mephisto", "Diablo"),
-  new HeroData("Muradin", "muradin", "Warcraft"),
-  new HeroData("Murky", "murky", "Warcraft"),
-  new HeroData("Nazeebo", "witchdoctor", "Diablo"),
-  new HeroData("Nova", "nova", "StarCraft"),
-  new HeroData("Orphea", "orphea", "Nexus"),
-  new HeroData("Probius", "probius", "StarCraft"),
-  new HeroData("Qhira", "nexushunter", "Nexus"),
-  new HeroData("Ragnaros", "ragnaros", "Warcraft"),
-  new HeroData("Raynor", "raynor", "StarCraft"),
-  new HeroData("Rehgar", "rehgar", "Warcraft"),
-  new HeroData("Rexxar", "rexxar", "Warcraft"),
-  new HeroData("Samuro", "samuro", "Warcraft"),
-  new HeroData("Sgt. Hammer", "sgthammer", "StarCraft"),
-  new HeroData("Sonya", "barbarian", "Diablo"),
-  new HeroData("Stitches", "stitches", "Warcraft"),
-  new HeroData("Stukov", "stukov", "StarCraft"),
-  new HeroData("Sylvanas", "sylvanas", "Warcraft"),
-  new HeroData("Tassadar", "tassadar", "StarCraft"),
-  new HeroData("Thrall", "thrall", "Warcraft"),
-  new HeroData("Tracer", "tracer", "Overwatch"),
-  new HeroData("Tychus", "tychus", "StarCraft"),
-  new HeroData("Tyrael", "tyrael", "Diablo"),
-  new HeroData("Tyrande", "tyrande", "Warcraft"),
-  new HeroData("Uther", "uther", "Warcraft"),
-  new HeroData("Valeera", "valeera", "Warcraft"),
-  new HeroData("Valla", "demonhunter", "Diablo"),
-  new HeroData("Varian", "varian", "Warcraft"),
-  new HeroData("Whitemane", "whitemane", "Warcraft"),
-  new HeroData("Xul", "necromancer", "Diablo"),
-  new HeroData("Yrel", "yrel", "Warcraft"),
-  new HeroData("Zagara", "zagara", "StarCraft"),
-  new HeroData("Zarya", "zarya", "Overwatch"),
-  new HeroData("Zeratul", "zeratul", "StarCraft"),
-  new HeroData("Zul\'jin", "zuljin", "Warcraft"),
+  new HeroData("Abathur", "abathur", "Warcraft", "Support"),
+  new HeroData("Alarak", "alarak", "StarCraft", "Melee Assassin"),
+  new HeroData("Alexstrasza", "alexstrasza", "Warcraft", "Healer"),
+  new HeroData("Ana", "ana", "Overwatch", "Healer"),
+  new HeroData("Anduin", "anduin", "Warcraft", "Healer"),
+  new HeroData("Anub\'arak", "anubarak", "Warcraft", "Tank"),
+  new HeroData("Artanis", "artanis", "StarCraft", "Bruiser"),
+  new HeroData("Arthas", "arthas", "Warcraft", "Tank"),
+  new HeroData("Auriel", "auriel", "Diablo", "Healer"),
+  new HeroData("Azmodan", "azmodan", "Diablo", "Ranged Assassin"),
+  new HeroData("Blaze", "firebat", "StarCraft", "Tank"),
+  new HeroData("Brightwing", "faeriedragon", "Warcraft", "Healer"),
+  new HeroData("The Butcher", "butcher", "Diablo", "Melee Assassin"),
+  new HeroData("Cassia", "amazon", "Diablo", "Ranged Assassin"),
+  new HeroData("Chen", "chen", "Warcraft", "Bruiser"),
+  new HeroData("Cho", "cho", "Warcraft", "Tank"),
+  new HeroData("Chromie", "chromie", "Warcraft", "Ranged Assassin"),
+  new HeroData("Deathwing", "deathwing", "Warcraft", "Bruiser"),
+  new HeroData("Deckard", "deckard", "Diablo", "Healer"),
+  new HeroData("Dehaka", "dehaka", "StarCraft", "Bruiser"),
+  new HeroData("Diablo", "diablo", "Diablo", "Tank"),
+  new HeroData("D.Va", "dva", "Overwatch", "Bruiser"),
+  new HeroData("E.T.C.", "l90etc", "Warcraft", "Tank"),
+  new HeroData("Falstad", "falstad", "Warcraft", "Ranged Assassin"),
+  new HeroData("Fenix", "fenix", "StarCraft", "Ranged Assassin"),
+  new HeroData("Gall", "gall", "Warcraft", "Ranged Assassin"),
+  new HeroData("Garrosh", "garrosh", "Warcraft", "Tank"),
+  new HeroData("Gazlowe", "gazlowe", "Warcraft", "Bruiser"),
+  new HeroData("Genji", "genji", "Overwatch", "Ranged Assassin"),
+  new HeroData("Greymane", "genngreymane", "Warcraft", "Ranged Assassin"),
+  new HeroData("Gul\'dan", "guldan", "Warcraft", "Ranged Assassin"),
+  new HeroData("Hanzo", "hanzo", "Overwatch", "Ranged Assassin"),
+  new HeroData("Hogger", "hogger", "Warcraft", "Bruiser"),
+  new HeroData("Illidan", "illidan", "Warcraft", "Melee Assassin"),
+  new HeroData("Imperius", "imperius", "Diablo", "Bruiser"),
+  new HeroData("Jaina", "jaina", "Warcraft", "Ranged Assassin"),
+  new HeroData("Johanna", "johanna", "Diablo", "Tank"),
+  new HeroData("Junkrat", "junkrat", "Overwatch", "Ranged Assassin"),
+  new HeroData("Kael\'thas", "kaelthas", "Warcraft", "Ranged Assassin"),
+  new HeroData("Kel\'Thuzad", "kelthuzad", "Warcraft", "Ranged Assassin"),
+  new HeroData("Kerrigan", "kerrigan", "StarCraft", "Melee Assassin"),
+  new HeroData("Kharazim", "monk", "Diablo", "Healer"),
+  new HeroData("Leoric", "leoric", "Diablo", "Bruiser"),
+  new HeroData("Li Li", "lili", "Warcraft", "Healer"),
+  new HeroData("Li-Ming", "wizard", "Diablo", "Ranged Assassin"),
+  new HeroData("The Lost Vikings", "lostvikings", "Nexus", "Support"),
+  new HeroData("Lt. Morales", "medic", "StarCraft", "Healer"),
+  new HeroData("Lucio", "lucio", "Overwatch", "Healer"),
+  new HeroData("Lunara", "lunara", "Warcraft", "Ranged Assassin"),
+  new HeroData("Maiev", "maiev", "Warcraft", "Melee Assassin"),
+  new HeroData("Malfurion", "malfurion", "Warcraft", "Healer"),
+  new HeroData("Mal\'Ganis", "malganis", "Warcraft", "Tank"),
+  new HeroData("Malthael", "malthael", "Diablo", "Melee Assassin"),
+  new HeroData("Mei", "meiow", "Overwatch", "Tank"),
+  new HeroData("Medivh", "medivh", "Warcraft", "Support"),
+  new HeroData("Mephisto", "mephisto", "Diablo", "Ranged Assassin"),
+  new HeroData("Muradin", "muradin", "Warcraft", "Tank"),
+  new HeroData("Murky", "murky", "Warcraft", "Melee Assassin"),
+  new HeroData("Nazeebo", "witchdoctor", "Diablo", "Ranged Assassin"),
+  new HeroData("Nova", "nova", "StarCraft", "Ranged Assassin"),
+  new HeroData("Orphea", "orphea", "Nexus", "Ranged Assassin"),
+  new HeroData("Probius", "probius", "StarCraft", "Ranged Assassin"),
+  new HeroData("Qhira", "nexushunter", "Nexus", "Melee Assassin"),
+  new HeroData("Ragnaros", "ragnaros", "Warcraft", "Bruiser"),
+  new HeroData("Raynor", "raynor", "StarCraft", "Ranged Assassin"),
+  new HeroData("Rehgar", "rehgar", "Warcraft", "Healer"),
+  new HeroData("Rexxar", "rexxar", "Warcraft", "Bruiser"),
+  new HeroData("Samuro", "samuro", "Warcraft", "Melee Assassin"),
+  new HeroData("Sgt. Hammer", "sgthammer", "StarCraft", "Ranged Assassin"),
+  new HeroData("Sonya", "barbarian", "Diablo", "Bruiser"),
+  new HeroData("Stitches", "stitches", "Warcraft", "Tank"),
+  new HeroData("Stukov", "stukov", "StarCraft", "Healer"),
+  new HeroData("Sylvanas", "sylvanas", "Warcraft", "Ranged Assassin"),
+  new HeroData("Tassadar", "tassadar", "StarCraft", "Ranged Assassin"),
+  new HeroData("Thrall", "thrall", "Warcraft", "Bruiser"),
+  new HeroData("Tracer", "tracer", "Overwatch", "Ranged Assassin"),
+  new HeroData("Tychus", "tychus", "StarCraft", "Ranged Assassin"),
+  new HeroData("Tyrael", "tyrael", "Diablo", "Tank"),
+  new HeroData("Tyrande", "tyrande", "Warcraft", "Healer"),
+  new HeroData("Uther", "uther", "Warcraft", "Healer"),
+  new HeroData("Valeera", "valeera", "Warcraft", "Melee Assassin"),
+  new HeroData("Valla", "demonhunter", "Diablo", "Ranged Assassin"),
+  new HeroData("Varian", "varian", "Warcraft", "Bruiser"),
+  new HeroData("Whitemane", "whitemane", "Warcraft", "Healer"),
+  new HeroData("Xul", "necromancer", "Diablo", "Bruiser"),
+  new HeroData("Yrel", "yrel", "Warcraft", "Bruiser"),
+  new HeroData("Zagara", "zagara", "StarCraft", "Ranged Assassin"),
+  new HeroData("Zarya", "zarya", "Overwatch", "Support"),
+  new HeroData("Zeratul", "zeratul", "StarCraft", "Melee Assassin"),
+  new HeroData("Zul\'jin", "zuljin", "Warcraft", "Ranged Assassin"),
 ];
 
 // Create lookup maps for efficient access
 const heroByName = new Map();
 const heroByAlias = new Map();
 const heroesByFranchise = new Map();
+const heroesByRole = new Map();
 
 // Populate lookup maps
 heroDatabase.forEach(hero => {
@@ -141,6 +143,11 @@ heroDatabase.forEach(hero => {
     heroesByFranchise.set(hero.franchise, []);
   }
   heroesByFranchise.get(hero.franchise).push(hero);
+  
+  if (!heroesByRole.has(hero.role)) {
+    heroesByRole.set(hero.role, []);
+  }
+  heroesByRole.get(hero.role).push(hero);
 });
 
 
@@ -177,6 +184,19 @@ export const getAllHeroNames = () => {
 
 export const getAllFranchises = () => {
   return Array.from(heroesByFranchise.keys());
+};
+
+export const getHeroRole = (heroName) => {
+  const hero = getHeroByName(heroName);
+  return hero ? hero.role : 'Unknown';
+};
+
+export const getHeroesByRole = (role) => {
+  return heroesByRole.get(role) || [];
+};
+
+export const getAllRoles = () => {
+  return Array.from(heroesByRole.keys());
 };
 
 // Legacy compatibility - maintain the old heroAlias object
